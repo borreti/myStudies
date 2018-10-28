@@ -128,7 +128,7 @@ namespace Grafos
 
         public abstract bool isEuleriano();
 
-        public abstract void ImprimirListaDeAdjacencia();
+        public abstract string ListaDeAdjacencia();
 
         public Vertice SelecionarVertice(int indice)
         {
@@ -412,25 +412,29 @@ namespace Grafos
             throw new NotImplementedException();
         }
 
-        public override void ImprimirListaDeAdjacencia()
+        public override string ListaDeAdjacencia()
         {
+            string valor = "";
+
             for (int i = 0; i < Vertices.Length; i++)
             {
-                Console.Write("Vertice {0}: ", Vertices[i].ID + 1);
+                valor += "Vertice " + i;
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
-                    Console.Write("{0}:{1}:{2}", Vertices[i].ListaDeAdjacencia[j].verticeDestino.ID + 1, Vertices[i].ListaDeAdjacencia[j].Direcao, Vertices[i].ListaDeAdjacencia[j].Peso);
+                    valor+= Vertices[i].ListaDeAdjacencia[j].verticeDestino.ID + 1 + ":" + Vertices[i].ListaDeAdjacencia[j].Direcao + ":" + Vertices[i].ListaDeAdjacencia[j].Peso;
 
                     if (j != Vertices[i].ListaDeAdjacencia.Count - 1)
-                        Console.Write(", ");
+                        valor += ", ";
 
                     else
-                        Console.WriteLine("");
+                        valor += "\n";
                 }
             }
-        }
 
+            return valor;
+        }
+        
         public Grafo_Dir Kruskal()
         {
             //algoritmo só deve ser executado em grafos conexos
@@ -768,23 +772,27 @@ namespace Grafos
             return true;
         }
 
-        public override void ImprimirListaDeAdjacencia()
+        public override string ListaDeAdjacencia()
         {
+            string valor = "";
+            
             for (int i = 0; i < Vertices.Length; i++)
             {
-                Console.Write("Vertice {0}: ", Vertices[i].ID + 1);
+                valor+="Vertice " + i + 1;
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
-                    Console.Write("{0}:{1}", Vertices[i].ListaDeAdjacencia[j].verticeDestino.ID + 1, Vertices[i].ListaDeAdjacencia[j].Peso);
+                    valor += (Vertices[i].ListaDeAdjacencia[j].verticeDestino.ID + 1) + ":" + Vertices[i].ListaDeAdjacencia[j].Peso;
 
                     if (j != Vertices[i].ListaDeAdjacencia.Count - 1)
-                        Console.Write(", ");
+                        valor += ", ";
 
                     else
-                        Console.WriteLine("");
+                        valor += "\n";
                 }
             }
+
+            return valor;
         }
 
         public Grafo_Und Kruskal()
