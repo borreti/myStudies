@@ -33,7 +33,13 @@ namespace MainProgram
 
             Grafo_Und grafoDirecionado = MontagemGrafoUnd("grafo.txt");
             Grafo_Und arvoreMinima = grafoDirecionado.Kruskal();
-            arvoreMinima.ImprimirListaDeAdjacencia();
+
+            List<int> caminho = grafoDirecionado.Dijkstra(1,4);
+
+            foreach(int v in caminho)
+                Console.WriteLine(v+1);
+
+
             Console.ReadKey();
         }
 
@@ -58,7 +64,7 @@ namespace MainProgram
 
             reader.Close();
 
-          return grafo = new Grafo_Und(nVertices, lista);
+            return grafo = new Grafo_Und(nVertices, lista);
         }
 
         static Grafo_Dir MontagemGrafoDir(string arqName)
@@ -181,7 +187,7 @@ namespace MainProgram
 
             return false;
         }
-        
+
         public bool isIsolado(Vertice v1)
         {
             if (getGrau(v1) == 0)
@@ -205,7 +211,7 @@ namespace MainProgram
 
         public void AnularGrafo()
         {
-            for(int i = 0; i < Vertices.Length; i++)
+            for (int i = 0; i < Vertices.Length; i++)
             {
                 int tamanhoLista = Vertices[i].ListaDeAdjacencia.Count;
                 for (int j = 0; j < tamanhoLista; j++)
@@ -397,7 +403,7 @@ namespace MainProgram
         }
     }
 
-    class Rede: Grafo_Dir
+    class Rede : Grafo_Dir
     {
         public Vertice Origem { get; set; }
         public Vertice Destino { get; set; }
@@ -423,7 +429,7 @@ namespace MainProgram
             Destino = Vertices[idVerticeDestino];
         }
 
-        private Rede EncontrarRedeResidual(Vertice atual, Queue<Vertice> filaVertices, Vertice [] vetVertices, int distancia, int tempo, Rede redeResidual)
+        private Rede EncontrarRedeResidual(Vertice atual, Queue<Vertice> filaVertices, Vertice[] vetVertices, int distancia, int tempo, Rede redeResidual)
         {
             if (atual.ID != Origem.ID)
             {
@@ -460,22 +466,22 @@ namespace MainProgram
         }
     }
 
-    class Grafo_Und: Grafo
-    {       
+    class Grafo_Und : Grafo
+    {
         public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares)
         {
             Vertices = new Vertice[numeroDeVertices];
 
             for (int i = 0; i < Vertices.Length; i++)
                 Vertices[i] = new Vertice(i);
-            
+
 
             foreach (ParOrdenado parOrdenado in listaDePares)
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Peso);
         }
 
         public override bool isAdjacente(Vertice v1, Vertice v2)
-        {           
+        {
             for (int k = 0; k < Vertices[v1.ID].ListaDeAdjacencia.Count; k++)
             {
                 if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeConectado.ID == v2.ID)
@@ -524,7 +530,7 @@ namespace MainProgram
 
         public override bool isConexo()
         {
-            for(int i = 0; i < Vertices.Length; i++)
+            for (int i = 0; i < Vertices.Length; i++)
             {
                 int val = 0;
                 Vertice v1 = Vertices[i];
@@ -565,7 +571,7 @@ namespace MainProgram
             }
 
             nVertices = Vertices.Length;
-            return  grafo = new Grafo_Und(nVertices, pares);
+            return grafo = new Grafo_Und(nVertices, pares);
         }
 
         private bool VerificarParExistente(int x, int y, List<ParOrdenado> lista)
@@ -614,6 +620,9 @@ namespace MainProgram
 
         public Grafo_Und Kruskal()
         {
+            if (!isConexo())
+                return null;
+
             List<Aresta> listaArestas = new List<Aresta>();
             List<ParOrdenado> pares = new List<ParOrdenado>();
             Grafo_Und grafoAuxilir = new Grafo_Und(Vertices.Length, pares);
@@ -709,60 +718,107 @@ namespace MainProgram
             return vetor;
         }
 
-        public void Dijkstra(int idOrigem, int idDestino)
+        //retorna uma lista com os ids do menor caminho entre dois vertices
+        public List<int> Dijkstra(int idOrigem, int idDestino)
         {
+            //só é executado o algoritmo se o grafo for conexo
+            if (!isConexo())
+                return null;
+
             int tamVet = Vertices.Length;
             int[] vetorDistancias = new int[tamVet];
-            List<int>[] vetorCaminhos = new List<int>[tamVet];
+            int[] vetorPredecessor = new int[tamVet];
 
             vetorDistancias[idOrigem] = 0;
-            vetorCaminhos[idOrigem] = new List<int>();
+            vetorPredecessor[idOrigem] = -1;
 
             for (int q = 0; q < tamVet; q++)
             {
                 if (q != idOrigem)
                 {
                     vetorDistancias[q] = int.MaxValue;
-                    vetorCaminhos[q] = new List<int>();
+                    vetorPredecessor[q] = int.MaxValue;
                 }
             }
 
-            Dijkstra(vetorDistancias, vetorCaminhos, idOrigem, idDestino, 0);
+            Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, idDestino, 0);
 
-            foreach(int v in vetorDistancias)
-                Console.WriteLine(v);
+            Stack<int> pilhaIndices = new Stack<int>();
+
+            pilhaIndices.Push(idDestino);
+
+            int proxId = idDestino;
+
+            while (true)
+            {
+                pilhaIndices.Push(vetorPredecessor[proxId]);
+                proxId = vetorPredecessor[proxId];
+                if (proxId == idOrigem)
+                    break;
+            }
+
+            List<int> listaIds = new List<int>();
+
+            foreach (int valor in pilhaIndices)
+                listaIds.Add(valor);
+
+            return listaIds;
         }
 
-        private void Dijkstra(int [] vetorDistancias, List<int>[] vetorCaminhos, int atual, int idDestino, int distAnterior)
+        private void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior)
         {
+            int idMenor = -1, menorCaminho = int.MaxValue;
 
-            if (atual != idDestino)
+            for (int f = 0; f < Vertices[atual].ListaDeAdjacencia.Count; f++)
             {
-                Vertices[atual].EstadoCor = 3;
-
-                int idMenor = 0, menorCaminho = int.MaxValue;
-
-                for (int f = 0; f < Vertices[atual].ListaDeAdjacencia.Count; f++)
+                if (Vertices[Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID].EstadoCor == 1)
                 {
-                    if (Vertices[Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID].EstadoCor == 1)
+                    int destino = Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID;
+
+                    int dist = Vertices[atual].ListaDeAdjacencia[f].Peso + distAnterior;
+
+                    if (dist < vetorDistancias[destino])
                     {
-                        int destino = Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID;
+                        vetorPredecessor[destino] = atual;
+                        vetorDistancias[destino] = dist;
+                    }
 
-                        vetorDistancias[destino] = Vertices[atual].ListaDeAdjacencia[f].Peso + distAnterior;
-
-                        vetorCaminhos[destino].Add(atual);
-
-                        if (vetorDistancias[destino] < menorCaminho && vetorDistancias[destino] != 0)
-                        {
-                            menorCaminho = vetorDistancias[destino];
-                            idMenor = destino;
-                        }
+                    if (vetorDistancias[destino] < menorCaminho && vetorDistancias[destino] != 0)
+                    {
+                        menorCaminho = vetorDistancias[destino];
+                        idMenor = destino;
                     }
                 }
-
-                Dijkstra(vetorDistancias, vetorCaminhos, idMenor, idDestino, vetorDistancias[idMenor]);
             }
 
+            Vertices[atual].EstadoCor = 3;
+
+            if (idMenor == -1)           
+                idMenor = BuscarVerticeAberto(vetorDistancias);
+
+
+            if (idMenor != -1)
+                Dijkstra(vetorDistancias, vetorPredecessor, idMenor, idDestino, vetorDistancias[idMenor]);
+        }
+
+        //retorna o indice de um vertice aberto com a menor distancia
+        private int BuscarVerticeAberto(int[] vetorDistancias)
+        {
+            int indice = -1, menorDistancia = int.MaxValue;
+
+            for (int z = 0; z < Vertices.Length; z++)
+            {
+                if (Vertices[z].EstadoCor == 1)
+                {
+                    if (vetorDistancias[z] < menorDistancia)
+                    {
+                        indice = z;
+                        menorDistancia = vetorDistancias[z];
+                    }
+                }
+            }
+
+            return indice;
         }
     }
 
