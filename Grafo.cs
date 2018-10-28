@@ -5,45 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace MainProgram
+namespace Grafos
 {
-    class Program
+    class GeradorGrafos
     {
-        static void Main(string[] args)
-        {
-            /*
-            Grafo_Und grafoSemDirecao;
-
-            //testes considerando um arquivo que dê um grafo com pelo menos 4 vertices
-            grafoSemDirecao = MontagemGrafoUnd("grafo.txt");
-            Vertice vertice1, vertice2, vertice3;
-            vertice1 = grafoSemDirecao.SelecionarVertice(0);
-            vertice2 = grafoSemDirecao.SelecionarVertice(1);
-            vertice3 = grafoSemDirecao.SelecionarVertice(2);
-            Console.WriteLine("TESTES EM GRAFOS NÃO DIRIGIDOS");
-            Console.WriteLine("V1 é adjacente a V3? {0}", grafoSemDirecao.isAdjacente(vertice1, vertice3));
-            Console.WriteLine("Qual o grau de V2?  {0}", grafoSemDirecao.getGrau(vertice2));
-            Console.WriteLine("O vertice V1 é isolado? {0}", grafoSemDirecao.isIsolado(vertice1));
-            Console.WriteLine("O vertice V2 é pendente? {0}", grafoSemDirecao.isPendente(vertice2));
-            Console.WriteLine("O grafo é regular? {0}", grafoSemDirecao.isRegular());
-            Console.WriteLine("O grafo é nulo? {0}", grafoSemDirecao.isNulo());
-            Console.WriteLine("O grafo é completo? {0}", grafoSemDirecao.isCompleto());
-            Console.WriteLine("O grafo é conexo? {0}", grafoSemDirecao.isConexo());
-            */
-
-            Grafo_Und grafoDirecionado = MontagemGrafoUnd("grafo.txt");
-            Grafo_Und arvoreMinima = grafoDirecionado.Kruskal();
-
-            List<int> caminho = grafoDirecionado.Dijkstra(1, 4);
-
-            foreach (int v in caminho)
-                Console.WriteLine(v + 1);
-
-
-            Console.ReadKey();
-        }
-
-
         static Grafo_Und MontagemGrafoUnd(string arqName)
         {
             Grafo_Und grafo;
