@@ -34,10 +34,10 @@ namespace MainProgram
             Grafo_Und grafoDirecionado = MontagemGrafoUnd("grafo.txt");
             Grafo_Und arvoreMinima = grafoDirecionado.Kruskal();
 
-            List<int> caminho = grafoDirecionado.Dijkstra(1,4);
+            List<int> caminho = grafoDirecionado.Dijkstra(1, 4);
 
-            foreach(int v in caminho)
-                Console.WriteLine(v+1);
+            foreach (int v in caminho)
+                Console.WriteLine(v + 1);
 
 
             Console.ReadKey();
@@ -125,7 +125,7 @@ namespace MainProgram
     class Aresta
     {
         public Vertice verticeOrigem { get; set; }
-        public Vertice verticeConectado { get; set; }
+        public Vertice verticeDestino { get; set; }
         public int Direcao { get; set; }
         public int Peso { get; set; }
         public int ID { get; set; }
@@ -133,7 +133,7 @@ namespace MainProgram
         public Aresta(Vertice verticeOrigem, Vertice verticeConectado, int Direcao, int Peso)
         {
             this.verticeOrigem = verticeOrigem;
-            this.verticeConectado = verticeConectado;
+            this.verticeDestino = verticeConectado;
             this.Direcao = Direcao;
             this.Peso = Peso;
         }
@@ -151,6 +151,7 @@ namespace MainProgram
             Vertices[idV2].ListaDeAdjacencia.Add(i1);
         }
 
+        protected abstract void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior);
 
         public abstract bool isConexo();
 
@@ -238,6 +239,49 @@ namespace MainProgram
                 Vertices[c].EstadoCor = 1;
         }
 
+        //ordena arestas por peso
+        protected Aresta[] insertionSort(Aresta[] vetor)
+        {
+            int i, j;
+
+            Aresta atual;
+
+            for (i = 1; i < vetor.Length; i++)
+            {
+                atual = vetor[i];
+                j = i;
+                while ((j > 0) && (vetor[j - 1].Peso > atual.Peso))
+                {
+                    vetor[j] = vetor[j - 1];
+                    j = j - 1;
+                }
+
+                vetor[j] = atual;
+            }
+
+            return vetor;
+        }
+
+        //retorna o indice de um vertice aberto com a menor distancia
+        protected int BuscarVerticeAberto(int[] vetorDistancias)
+        {
+            int indice = -1, menorDistancia = int.MaxValue;
+
+            for (int z = 0; z < Vertices.Length; z++)
+            {
+                if (Vertices[z].EstadoCor == 1)
+                {
+                    if (vetorDistancias[z] < menorDistancia)
+                    {
+                        indice = z;
+                        menorDistancia = vetorDistancias[z];
+                    }
+                }
+            }
+
+            return indice;
+        }
+
     }
 
     class Grafo_Dir : Grafo
@@ -294,7 +338,27 @@ namespace MainProgram
 
         public override bool isConexo()
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < Vertices.Length; i++)
+            {
+                int saidas = 0, entradas = 0;
+                Vertice v1 = Vertices[i];
+                for (int j = 0; j < v1.ListaDeAdjacencia.Count; j++)
+                {
+                    if (v1 != v1.ListaDeAdjacencia[j].verticeDestino)
+                    {
+                        if (v1.ListaDeAdjacencia[j].Direcao == 1)
+                            saidas++;
+
+                        else if (v1.ListaDeAdjacencia[j].Direcao == -1)
+                            entradas++;
+                    }
+                }
+
+                if (saidas == 0 || entradas == 0)
+                    return false;
+            }
+
+            return true;
         }
 
         public override bool isAdjacente(Vertice v1, Vertice v2)
@@ -339,11 +403,11 @@ namespace MainProgram
                 for (int p = 0; p < vetVertices[indice].ListaDeAdjacencia.Count; p++)
                 {
                     //se existe um vertice ainda não visitado
-                    if (vetVertices[vetVertices[indice].ListaDeAdjacencia[p].verticeConectado.ID].EstadoCor == 1 && vetVertices[indice].ListaDeAdjacencia[p].Direcao == 1)
+                    if (vetVertices[vetVertices[indice].ListaDeAdjacencia[p].verticeDestino.ID].EstadoCor == 1 && vetVertices[indice].ListaDeAdjacencia[p].Direcao == 1)
                     {
                         tempo++;  //acrescenta uma unidade de tempo
                         int predecessor = indice;  //define o predecessor
-                        int novoIndice = vetVertices[indice].ListaDeAdjacencia[p].verticeConectado.ID; //define o proximo indice a ser acessado
+                        int novoIndice = vetVertices[indice].ListaDeAdjacencia[p].verticeDestino.ID; //define o proximo indice a ser acessado
                         vetVertices[novoIndice].Predecessor = vetVertices[predecessor]; //define o predecessor do vertice atual
                         OrdenacaoTopologica(vetVertices, novoIndice, tempo, pilhaVertices); // faz uma chamada recursiva implicita
                         return;
@@ -391,7 +455,7 @@ namespace MainProgram
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
-                    Console.Write("{0}:{1}:{2}", Vertices[i].ListaDeAdjacencia[j].verticeConectado.ID + 1, Vertices[i].ListaDeAdjacencia[j].Direcao, Vertices[i].ListaDeAdjacencia[j].Peso);
+                    Console.Write("{0}:{1}:{2}", Vertices[i].ListaDeAdjacencia[j].verticeDestino.ID + 1, Vertices[i].ListaDeAdjacencia[j].Direcao, Vertices[i].ListaDeAdjacencia[j].Peso);
 
                     if (j != Vertices[i].ListaDeAdjacencia.Count - 1)
                         Console.Write(", ");
@@ -400,6 +464,146 @@ namespace MainProgram
                         Console.WriteLine("");
                 }
             }
+        }
+
+        public Grafo_Dir Kruskal()
+        {
+            //algoritmo só deve ser executado em grafos conexos
+            if (!isConexo()) //se o grafo não é conexo, o algoritmo não será executado e retornará null
+                return null;
+
+            //pré processamento dos dados
+            List<Aresta> listaArestas = new List<Aresta>();
+            List<ParOrdenado> pares = new List<ParOrdenado>();
+            Grafo_Dir grafoAuxilir = new Grafo_Dir(Vertices.Length, pares);
+
+            for (int g = 0; g < Vertices.Length; g++)
+            {
+                for (int a = 0; a < Vertices[g].ListaDeAdjacencia.Count; a++)
+                {
+                    if (Vertices[g].ListaDeAdjacencia[a].Direcao == 1)
+                        listaArestas.Add(Vertices[g].ListaDeAdjacencia[a]);
+                }
+            }
+
+            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray());
+            //dados processados e arestas já ordenadas
+
+            //para cada aresta no vetor de aresta
+            for (int v = 0; v < arestasOrdenadas.Length; v++)
+            {
+                //capturar origem e destino da aresta, ignorando a direção, pois é um grafo não dirigido
+                int idOrigem = arestasOrdenadas[v].verticeOrigem.ID;
+                int idDestino = arestasOrdenadas[v].verticeDestino.ID;
+
+                //if para ignorar os loops do grafo original
+                if (idOrigem != idDestino)
+                {
+                    //fila auxiliar para executar a busca pelo ciclo
+                    Queue<int> fila = new Queue<int>();
+
+                    //verifica se a adição da nova aresta vai gerar um ciclo
+                    if (!VerificarCiclo(fila, idOrigem, idDestino, idDestino, grafoAuxilir))
+                        grafoAuxilir.FormarNovaAresta(idOrigem, idDestino, arestasOrdenadas[v].Peso); //não formando ciclo, nova aresta é criada
+                }
+            }
+
+            return grafoAuxilir;
+        }
+
+        private bool VerificarCiclo(Queue<int> fila, int idOrigem, int idDestino, int idAtual, Grafo_Dir grafoAux)
+        {
+            //MÉTODO RECURSIVO BASEADO NA TRAVESSIA EM AMPLITUDE
+            grafoAux.Vertices[idAtual].EstadoCor = 2;
+
+            //para cada item da lista de adjacencia do vértice atual
+            for (int w = 0; w < grafoAux.Vertices[idAtual].ListaDeAdjacencia.Count; w++)
+            {
+                //se a direção é origem -> destino
+                if (grafoAux.Vertices[idAtual].ListaDeAdjacencia[w].Direcao == 1)
+                {
+                    //captura o indice do vertice destino
+                    int idLaco = grafoAux.Vertices[idAtual].ListaDeAdjacencia[w].verticeDestino.ID;
+
+                    //se o indice capturado for igual a origem, singnifica que esses componentes ja são conexos
+                    //a adição de uma nova aresta, formaria um ciclo, portanto, retorna verdadeiro
+                    if (idLaco == idOrigem)
+                    {
+                        //reseta as cores do grafo auxiliar, para não atrapalhar as próximas execuções do algoritmo
+                        grafoAux.ResetarCores();
+                        return true;
+                    }
+
+                    else
+                    {
+                        //verifica se o vertice já não foi visitado anteriormente
+                        if (grafoAux.Vertices[idLaco].EstadoCor == 1)
+                        {
+                            fila.Enqueue(idLaco); //enfileira o indice do vertice que está sendo visitado
+                            grafoAux.Vertices[idLaco].EstadoCor = 2; //pinta o vertice de azul
+                        }
+                    }
+                }
+            }
+
+            grafoAux.Vertices[idAtual].EstadoCor = 3; //pinta o vertice de vermelho
+
+            //condição para chamada recursiva
+            //se existem itens na fila, ainda há vertices para verificar a condição de ciclo
+            if (fila.Count > 0)
+            {
+                //remove da fila, detectando o próximo vertice a ser verificado
+                int prox = fila.Dequeue();
+
+                //chamada recursiva com parametros atualizados
+                return VerificarCiclo(fila, idOrigem, idDestino, prox, grafoAux);
+            }
+
+            //else que será executado quando todos os vértices já tiverem sido visitados
+            else
+            {
+                //reseta as cores do grafo auxiliar, para não atrapalhar as próximas execuções do algoritmo
+                grafoAux.ResetarCores();
+                return false;
+            }
+        }
+
+        protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior)
+        {
+            int idMenor = -1, menorCaminho = int.MaxValue;
+
+            for (int f = 0; f < Vertices[atual].ListaDeAdjacencia.Count; f++)
+            {
+                int indexDestino = Vertices[atual].ListaDeAdjacencia[f].verticeDestino.ID;
+
+                if (Vertices[indexDestino].EstadoCor == 1 && Vertices[indexDestino].ListaDeAdjacencia[f].Direcao == 1)
+                {
+                    int destino = Vertices[atual].ListaDeAdjacencia[f].verticeDestino.ID;
+
+                    int dist = Vertices[atual].ListaDeAdjacencia[f].Peso + distAnterior;
+
+                    if (dist < vetorDistancias[destino])
+                    {
+                        vetorPredecessor[destino] = atual;
+                        vetorDistancias[destino] = dist;
+                    }
+
+                    if (vetorDistancias[destino] < menorCaminho && vetorDistancias[destino] != 0)
+                    {
+                        menorCaminho = vetorDistancias[destino];
+                        idMenor = destino;
+                    }
+                }
+            }
+
+            Vertices[atual].EstadoCor = 3;
+
+            if (idMenor == -1)
+                idMenor = BuscarVerticeAberto(vetorDistancias);
+
+
+            if (idMenor != -1)
+                Dijkstra(vetorDistancias, vetorPredecessor, idMenor, idDestino, vetorDistancias[idMenor]);
         }
     }
 
@@ -441,14 +645,14 @@ namespace MainProgram
 
                 for (int i = 0; i < atual.ListaDeAdjacencia.Count; i++)
                 {
-                    if (vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].EstadoCor < 2)
+                    if (vetVertices[atual.ListaDeAdjacencia[i].verticeDestino.ID].EstadoCor < 2)
                     {
-                        vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].Predecessor = atual;
-                        vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].TempoDeDescoberta = tempo;
-                        vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].Distancia = distancia;
+                        vetVertices[atual.ListaDeAdjacencia[i].verticeDestino.ID].Predecessor = atual;
+                        vetVertices[atual.ListaDeAdjacencia[i].verticeDestino.ID].TempoDeDescoberta = tempo;
+                        vetVertices[atual.ListaDeAdjacencia[i].verticeDestino.ID].Distancia = distancia;
                         tempo++;
-                        redeResidual.FormarNovaAresta(vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].ID, atual.ID, atual.ListaDeAdjacencia[i].Peso);
-                        filaVertices.Enqueue(atual.ListaDeAdjacencia[i].verticeConectado);
+                        redeResidual.FormarNovaAresta(vetVertices[atual.ListaDeAdjacencia[i].verticeDestino.ID].ID, atual.ID, atual.ListaDeAdjacencia[i].Peso);
+                        filaVertices.Enqueue(atual.ListaDeAdjacencia[i].verticeDestino);
                         verticesVisitados++;
                     }
                 }
@@ -484,7 +688,7 @@ namespace MainProgram
         {
             for (int k = 0; k < Vertices[v1.ID].ListaDeAdjacencia.Count; k++)
             {
-                if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeConectado.ID == v2.ID)
+                if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeDestino.ID == v2.ID)
                     return true;
             }
 
@@ -536,7 +740,7 @@ namespace MainProgram
                 Vertice v1 = Vertices[i];
                 for (int j = 0; j < v1.ListaDeAdjacencia.Count; j++)
                 {
-                    if (v1 != v1.ListaDeAdjacencia[j].verticeConectado)
+                    if (v1 != v1.ListaDeAdjacencia[j].verticeDestino)
                         val++;
                 }
 
@@ -607,7 +811,7 @@ namespace MainProgram
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
-                    Console.Write("{0}:{1}", Vertices[i].ListaDeAdjacencia[j].verticeConectado.ID + 1, Vertices[i].ListaDeAdjacencia[j].Peso);
+                    Console.Write("{0}:{1}", Vertices[i].ListaDeAdjacencia[j].verticeDestino.ID + 1, Vertices[i].ListaDeAdjacencia[j].Peso);
 
                     if (j != Vertices[i].ListaDeAdjacencia.Count - 1)
                         Console.Write(", ");
@@ -620,9 +824,11 @@ namespace MainProgram
 
         public Grafo_Und Kruskal()
         {
-            if (!isConexo())
+            //algoritmo só deve ser executado em grafos conexos
+            if (!isConexo()) //se o grafo não é conexo, o algoritmo não será executado e retornará null
                 return null;
 
+            //pré processamento dos dados
             List<Aresta> listaArestas = new List<Aresta>();
             List<ParOrdenado> pares = new List<ParOrdenado>();
             Grafo_Und grafoAuxilir = new Grafo_Und(Vertices.Length, pares);
@@ -637,19 +843,24 @@ namespace MainProgram
             }
 
             Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray());
+            //dados processados e arestas já ordenadas
 
+            //para cada aresta no vetor de aresta
             for (int v = 0; v < arestasOrdenadas.Length; v++)
             {
+                //capturar origem e destino da aresta, ignorando a direção, pois é um grafo não dirigido
                 int idOrigem = arestasOrdenadas[v].verticeOrigem.ID;
-                int idDestino = arestasOrdenadas[v].verticeConectado.ID;
+                int idDestino = arestasOrdenadas[v].verticeDestino.ID;
 
                 //if para ignorar os loops do grafo original
                 if (idOrigem != idDestino)
                 {
+                    //fila auxiliar para executar a busca pelo ciclo
                     Queue<int> fila = new Queue<int>();
 
+                    //verifica se a adição da nova aresta vai gerar um ciclo
                     if (!VerificarCiclo(fila, idOrigem, idDestino, idDestino, grafoAuxilir))
-                        grafoAuxilir.FormarNovaAresta(idOrigem, idDestino, arestasOrdenadas[v].Peso);
+                        grafoAuxilir.FormarNovaAresta(idOrigem, idDestino, arestasOrdenadas[v].Peso); //não formando ciclo, nova aresta é criada
                 }
             }
 
@@ -658,64 +869,55 @@ namespace MainProgram
 
         private bool VerificarCiclo(Queue<int> fila, int idOrigem, int idDestino, int idAtual, Grafo_Und grafoAux)
         {
+            //MÉTODO RECURSIVO BASEADO NA TRAVESSIA EM AMPLITUDE
             grafoAux.Vertices[idAtual].EstadoCor = 2;
 
+            //para cada item da lista de adjacencia do vértice atual
             for (int w = 0; w < grafoAux.Vertices[idAtual].ListaDeAdjacencia.Count; w++)
             {
-                int idLaco = grafoAux.Vertices[idAtual].ListaDeAdjacencia[w].verticeConectado.ID;
+                //captura o indice do vertice destino
+                int idLaco = grafoAux.Vertices[idAtual].ListaDeAdjacencia[w].verticeDestino.ID;
 
+                //se o indice capturado for igual a origem, singnifica que esses componentes ja são conexos
+                //a adição de uma nova aresta, formaria um ciclo, portanto, retorna verdadeiro
                 if (idLaco == idOrigem)
                 {
+                    //reseta as cores do grafo auxiliar, para não atrapalhar as próximas execuções do algoritmo
                     grafoAux.ResetarCores();
                     return true;
                 }
 
                 else
                 {
+                    //verifica se o vertice já não foi visitado anteriormente
                     if (grafoAux.Vertices[idLaco].EstadoCor == 1)
                     {
-                        fila.Enqueue(idLaco);
-                        grafoAux.Vertices[idLaco].EstadoCor = 2;
+                        fila.Enqueue(idLaco); //enfileira o indice do vertice que está sendo visitado
+                        grafoAux.Vertices[idLaco].EstadoCor = 2; //pinta o vertice de azul
                     }
                 }
             }
 
-            grafoAux.Vertices[idAtual].EstadoCor = 3;
+            grafoAux.Vertices[idAtual].EstadoCor = 3; //pinta o vertice de vermelho
 
+            //condição para chamada recursiva
+            //se existem itens na fila, ainda há vertices para verificar a condição de ciclo
             if (fila.Count > 0)
             {
+                //remove da fila, detectando o próximo vertice a ser verificado
                 int prox = fila.Dequeue();
 
+                //chamada recursiva com parametros atualizados
                 return VerificarCiclo(fila, idOrigem, idDestino, prox, grafoAux);
             }
 
+            //else que será executado quando todos os vértices já tiverem sido visitados
             else
             {
+                //reseta as cores do grafo auxiliar, para não atrapalhar as próximas execuções do algoritmo
                 grafoAux.ResetarCores();
                 return false;
             }
-        }
-
-        private Aresta[] insertionSort(Aresta[] vetor)
-        {
-            int i, j;
-
-            Aresta atual;
-
-            for (i = 1; i < vetor.Length; i++)
-            {
-                atual = vetor[i];
-                j = i;
-                while ((j > 0) && (vetor[j - 1].Peso > atual.Peso))
-                {
-                    vetor[j] = vetor[j - 1];
-                    j = j - 1;
-                }
-
-                vetor[j] = atual;
-            }
-
-            return vetor;
         }
 
         //retorna uma lista com os ids do menor caminho entre dois vertices
@@ -765,15 +967,17 @@ namespace MainProgram
             return listaIds;
         }
 
-        private void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior)
+        protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior)
         {
             int idMenor = -1, menorCaminho = int.MaxValue;
 
             for (int f = 0; f < Vertices[atual].ListaDeAdjacencia.Count; f++)
             {
-                if (Vertices[Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID].EstadoCor == 1)
+                int indexDestino = Vertices[atual].ListaDeAdjacencia[f].verticeDestino.ID;
+
+                if (Vertices[indexDestino].EstadoCor == 1)
                 {
-                    int destino = Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID;
+                    int destino = Vertices[atual].ListaDeAdjacencia[f].verticeDestino.ID;
 
                     int dist = Vertices[atual].ListaDeAdjacencia[f].Peso + distAnterior;
 
@@ -793,32 +997,12 @@ namespace MainProgram
 
             Vertices[atual].EstadoCor = 3;
 
-            if (idMenor == -1)           
+            if (idMenor == -1)
                 idMenor = BuscarVerticeAberto(vetorDistancias);
 
 
             if (idMenor != -1)
                 Dijkstra(vetorDistancias, vetorPredecessor, idMenor, idDestino, vetorDistancias[idMenor]);
-        }
-
-        //retorna o indice de um vertice aberto com a menor distancia
-        private int BuscarVerticeAberto(int[] vetorDistancias)
-        {
-            int indice = -1, menorDistancia = int.MaxValue;
-
-            for (int z = 0; z < Vertices.Length; z++)
-            {
-                if (Vertices[z].EstadoCor == 1)
-                {
-                    if (vetorDistancias[z] < menorDistancia)
-                    {
-                        indice = z;
-                        menorDistancia = vetorDistancias[z];
-                    }
-                }
-            }
-
-            return indice;
         }
     }
 
