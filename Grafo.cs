@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,15 +31,9 @@ namespace MainProgram
             Console.WriteLine("O grafo é conexo? {0}", grafoSemDirecao.isConexo());
             */
 
-            Grafo_Dir grafoDirecionado = MontagemGrafoDir("grafoDir.txt");
-
-            Stack<Vertice> stack = grafoDirecionado.OrdenacaoTopologica();
-
-            foreach(Vertice v in stack)
-                Console.WriteLine(v.ID + 1);
-
-            grafoDirecionado.ImprimirListaDeAdjacencia();
-
+            Grafo_Und grafoDirecionado = MontagemGrafoUnd("grafo.txt");
+            Grafo_Und arvoreMinima = grafoDirecionado.Kruskal();
+            arvoreMinima.ImprimirListaDeAdjacencia();
             Console.ReadKey();
         }
 
@@ -122,15 +116,20 @@ namespace MainProgram
         }
     }
 
-    class ItemListaAdj
+    class Aresta
     {
-        public Vertice vertice { get; set; }
+        public Vertice verticeOrigem { get; set; }
+        public Vertice verticeConectado { get; set; }
         public int Direcao { get; set; }
+        public int Peso { get; set; }
+        public int ID { get; set; }
 
-        public ItemListaAdj(Vertice vertice, int Direcao)
+        public Aresta(Vertice verticeOrigem, Vertice verticeConectado, int Direcao, int Peso)
         {
-            this.vertice = vertice;
+            this.verticeOrigem = verticeOrigem;
+            this.verticeConectado = verticeConectado;
             this.Direcao = Direcao;
+            this.Peso = Peso;
         }
     }
 
@@ -138,9 +137,14 @@ namespace MainProgram
     {
         protected Vertice[] Vertices;
 
-        protected List<Aresta> ListaDeArestas;
+        protected void FormarNovaAresta(int idV1, int idV2, int Peso)
+        {
+            Aresta i1 = new Aresta(this.Vertices[idV2], this.Vertices[idV1], -1, Peso);
+            Aresta i2 = new Aresta(this.Vertices[idV1], this.Vertices[idV2], 1, Peso);
+            Vertices[idV1].ListaDeAdjacencia.Add(i2);
+            Vertices[idV2].ListaDeAdjacencia.Add(i1);
+        }
 
-        protected abstract void FormarNovaAresta(Vertice v1, Vertice v2, int Peso);
 
         public abstract bool isConexo();
 
@@ -161,11 +165,13 @@ namespace MainProgram
 
         public bool isNulo()
         {
-            if (ListaDeArestas.Count == 0)
-                return true;
+            for (int i = 0; i < Vertices.Length; i++)
+            {
+                if (Vertices[i].ListaDeAdjacencia.Count > 0)
+                    return false;
+            }
 
-            else
-                return false;
+            return true;
         }
 
         public bool isPendente(Vertice v1)
@@ -197,32 +203,56 @@ namespace MainProgram
             return true;
         }
 
+        public void AnularGrafo()
+        {
+            for(int i = 0; i < Vertices.Length; i++)
+            {
+                int tamanhoLista = Vertices[i].ListaDeAdjacencia.Count;
+                for (int j = 0; j < tamanhoLista; j++)
+                {
+                    Vertices[i].ListaDeAdjacencia.RemoveAt(0);
+                }
+            }
+        }
+
+        protected int ExisteVerticesEmBranco()
+        {
+            for (int h = 0; h < Vertices.Length; h++)
+            {
+                if (Vertices[h].EstadoCor == 1)
+                    return h;
+            }
+
+            return -1;
+        }
+
+        public void ResetarCores()
+        {
+            for (int c = 0; c < Vertices.Length; c++)
+                Vertices[c].EstadoCor = 1;
+        }
+
     }
 
-    class Grafo_Dir: Grafo
+    class Grafo_Dir : Grafo
     {
         public Grafo_Dir(int numeroDeVertices, List<ParOrdenado> listaDePares)
         {
             Vertices = new Vertice[numeroDeVertices];
-            ListaDeArestas = new List<Aresta>();
 
             for (int i = 0; i < Vertices.Length; i++)
                 Vertices[i] = new Vertice(i);
 
 
             foreach (ParOrdenado parOrdenado in listaDePares)
-                FormarNovaAresta(Vertices[parOrdenado.X], Vertices[parOrdenado.Y], parOrdenado.Peso);
+                FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Peso);
         }
 
-        protected override void FormarNovaAresta(Vertice v1, Vertice v2, int Peso)
+        public Grafo_Dir()
         {
-            Aresta novaAresta1 = new Aresta(Peso,v1, v2);
-            ItemListaAdj i1 = new ItemListaAdj(v1, -1);
-            ItemListaAdj i2 = new ItemListaAdj(v2, 1);
-            Vertices[v1.ID].ListaDeAdjacencia.Add(i2);
-            Vertices[v2.ID].ListaDeAdjacencia.Add(i1);
-            ListaDeArestas.Add(novaAresta1);
+
         }
+
 
         public int getGrauEntrada(Vertice v1)
         {
@@ -234,7 +264,7 @@ namespace MainProgram
             return getGrau(v1, 1);
         }
 
-        private int getGrau(Vertice v1, int dir)
+        protected int getGrau(Vertice v1, int dir)
         {
             int grau = 0;
 
@@ -294,7 +324,7 @@ namespace MainProgram
         }
 
         //Visitar vertice por ordenacao topologica
-        private void VisitarVerticeOT(Vertice[] vetVertices, int indice,ref int tempo, Stack<Vertice> pilhaVertices)
+        private void VisitarVerticeOT(Vertice[] vetVertices, int indice, ref int tempo, Stack<Vertice> pilhaVertices)
         {
             //se o vertice ainda não foi pintado de vermelho
             if (vetVertices[indice].EstadoCor != 3)
@@ -303,11 +333,11 @@ namespace MainProgram
                 for (int p = 0; p < vetVertices[indice].ListaDeAdjacencia.Count; p++)
                 {
                     //se existe um vertice ainda não visitado
-                    if (vetVertices[vetVertices[indice].ListaDeAdjacencia[p].vertice.ID].EstadoCor == 1 && vetVertices[indice].ListaDeAdjacencia[p].Direcao == 1)
-                    {                    
+                    if (vetVertices[vetVertices[indice].ListaDeAdjacencia[p].verticeConectado.ID].EstadoCor == 1 && vetVertices[indice].ListaDeAdjacencia[p].Direcao == 1)
+                    {
                         tempo++;  //acrescenta uma unidade de tempo
                         int predecessor = indice;  //define o predecessor
-                        int novoIndice = vetVertices[indice].ListaDeAdjacencia[p].vertice.ID; //define o proximo indice a ser acessado
+                        int novoIndice = vetVertices[indice].ListaDeAdjacencia[p].verticeConectado.ID; //define o proximo indice a ser acessado
                         vetVertices[novoIndice].Predecessor = vetVertices[predecessor]; //define o predecessor do vertice atual
                         OrdenacaoTopologica(vetVertices, novoIndice, tempo, pilhaVertices); // faz uma chamada recursiva implicita
                         return;
@@ -334,23 +364,13 @@ namespace MainProgram
                 indice = ExisteVerticesEmBranco();
 
                 //se existe vertices em branco
-                if (indice !=-1)
-                OrdenacaoTopologica(vetVertices, indice, tempo, pilhaVertices); //chamada do método de ordenação com o indice do vertice em branco
+                if (indice != -1)
+                    OrdenacaoTopologica(vetVertices, indice, tempo, pilhaVertices); //chamada do método de ordenação com o indice do vertice em branco
             }
         }
 
         //Verifica se existem vertices em branco, e se existe, retorna o indice para acesso
         //Se não existem vertices em branco, retorna -1
-        private int ExisteVerticesEmBranco()
-        {
-            for (int h= 0; h < Vertices.Length; h++)
-            {
-                if (Vertices[h].EstadoCor == 1)
-                    return h;
-            }
-
-            return -1;
-        }
 
         public override bool isEuleriano()
         {
@@ -365,7 +385,7 @@ namespace MainProgram
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
-                    Console.Write("{0}:{1}", Vertices[i].ListaDeAdjacencia[j].vertice.ID + 1, Vertices[i].ListaDeAdjacencia[j].Direcao);
+                    Console.Write("{0}:{1}:{2}", Vertices[i].ListaDeAdjacencia[j].verticeConectado.ID + 1, Vertices[i].ListaDeAdjacencia[j].Direcao, Vertices[i].ListaDeAdjacencia[j].Peso);
 
                     if (j != Vertices[i].ListaDeAdjacencia.Count - 1)
                         Console.Write(", ");
@@ -377,38 +397,88 @@ namespace MainProgram
         }
     }
 
+    class Rede: Grafo_Dir
+    {
+        public Vertice Origem { get; set; }
+        public Vertice Destino { get; set; }
+
+        public Rede(int numeroVertices, int idOrigem, int idDestino)
+        {
+            Vertices = new Vertice[numeroVertices];
+            Origem = Vertices[idOrigem];
+            Destino = Vertices[idDestino];
+        }
+
+        public Rede(int numeroVertices, List<ParOrdenado> listaDePares, int idVerticeOrigem, int idVerticeDestino)
+        {
+            Vertices = new Vertice[numeroVertices];
+
+            for (int i = 0; i < Vertices.Length; i++)
+                Vertices[i] = new Vertice(i);
+
+            foreach (ParOrdenado parOrdenado in listaDePares)
+                FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Peso);
+
+            Origem = Vertices[idVerticeOrigem];
+            Destino = Vertices[idVerticeDestino];
+        }
+
+        private Rede EncontrarRedeResidual(Vertice atual, Queue<Vertice> filaVertices, Vertice [] vetVertices, int distancia, int tempo, Rede redeResidual)
+        {
+            if (atual.ID != Origem.ID)
+            {
+                vetVertices[atual.ID].EstadoCor = 2;
+
+                filaVertices.Enqueue(atual);
+
+                int verticesVisitados = 0;
+
+                for (int i = 0; i < atual.ListaDeAdjacencia.Count; i++)
+                {
+                    if (vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].EstadoCor < 2)
+                    {
+                        vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].Predecessor = atual;
+                        vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].TempoDeDescoberta = tempo;
+                        vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].Distancia = distancia;
+                        tempo++;
+                        redeResidual.FormarNovaAresta(vetVertices[atual.ListaDeAdjacencia[i].verticeConectado.ID].ID, atual.ID, atual.ListaDeAdjacencia[i].Peso);
+                        filaVertices.Enqueue(atual.ListaDeAdjacencia[i].verticeConectado);
+                        verticesVisitados++;
+                    }
+                }
+
+                if (verticesVisitados == 0)
+                    return null;
+
+                tempo++;
+                vetVertices[atual.ID].EstadoCor = 3;
+                filaVertices.Dequeue();
+                return EncontrarRedeResidual(filaVertices.ElementAt(0), filaVertices, vetVertices, distancia + 1, tempo + 1, redeResidual);
+            }
+
+            return redeResidual;
+        }
+    }
+
     class Grafo_Und: Grafo
     {       
         public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares)
         {
             Vertices = new Vertice[numeroDeVertices];
-            ListaDeArestas = new List<Aresta>();
 
             for (int i = 0; i < Vertices.Length; i++)
                 Vertices[i] = new Vertice(i);
             
 
             foreach (ParOrdenado parOrdenado in listaDePares)
-                FormarNovaAresta(Vertices[parOrdenado.X], Vertices[parOrdenado.Y], parOrdenado.Peso);
-        }
-
-        protected override void FormarNovaAresta(Vertice v1, Vertice v2, int Peso)
-        {
-            Aresta novaAresta = new Aresta(Peso, v1, v2);
-            ItemListaAdj i1 = new ItemListaAdj(v1, 0);
-            ItemListaAdj i2 = new ItemListaAdj(v2, 0);
-            Vertices[v1.ID].ListaDeAdjacencia.Add(i2);
-            Vertices[v2.ID].ListaDeAdjacencia.Add(i1);
-            ListaDeArestas.Add(novaAresta);
+                FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Peso);
         }
 
         public override bool isAdjacente(Vertice v1, Vertice v2)
-        {
-            ItemListaAdj item = new ItemListaAdj(Vertices[v2.ID], 0);
-            
+        {           
             for (int k = 0; k < Vertices[v1.ID].ListaDeAdjacencia.Count; k++)
             {
-                if (Vertices[v1.ID].ListaDeAdjacencia[k].vertice == item.vertice)
+                if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeConectado.ID == v2.ID)
                     return true;
             }
 
@@ -460,7 +530,7 @@ namespace MainProgram
                 Vertice v1 = Vertices[i];
                 for (int j = 0; j < v1.ListaDeAdjacencia.Count; j++)
                 {
-                    if (v1 != v1.ListaDeAdjacencia[j].vertice)
+                    if (v1 != v1.ListaDeAdjacencia[j].verticeConectado)
                         val++;
                 }
 
@@ -531,7 +601,7 @@ namespace MainProgram
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
-                    Console.Write("{0}", Vertices[i].ListaDeAdjacencia[j].vertice.ID + 1);
+                    Console.Write("{0}:{1}", Vertices[i].ListaDeAdjacencia[j].verticeConectado.ID + 1, Vertices[i].ListaDeAdjacencia[j].Peso);
 
                     if (j != Vertices[i].ListaDeAdjacencia.Count - 1)
                         Console.Write(", ");
@@ -541,22 +611,176 @@ namespace MainProgram
                 }
             }
         }
+
+        public Grafo_Und Kruskal()
+        {
+            List<Aresta> listaArestas = new List<Aresta>();
+            List<ParOrdenado> pares = new List<ParOrdenado>();
+            Grafo_Und grafoAuxilir = new Grafo_Und(Vertices.Length, pares);
+
+            for (int g = 0; g < Vertices.Length; g++)
+            {
+                for (int a = 0; a < Vertices[g].ListaDeAdjacencia.Count; a++)
+                {
+                    if (Vertices[g].ListaDeAdjacencia[a].Direcao == 1)
+                        listaArestas.Add(Vertices[g].ListaDeAdjacencia[a]);
+                }
+            }
+
+            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray());
+
+            for (int v = 0; v < arestasOrdenadas.Length; v++)
+            {
+                int idOrigem = arestasOrdenadas[v].verticeOrigem.ID;
+                int idDestino = arestasOrdenadas[v].verticeConectado.ID;
+
+                //if para ignorar os loops do grafo original
+                if (idOrigem != idDestino)
+                {
+                    Queue<int> fila = new Queue<int>();
+
+                    if (!VerificarCiclo(fila, idOrigem, idDestino, idDestino, grafoAuxilir))
+                        grafoAuxilir.FormarNovaAresta(idOrigem, idDestino, arestasOrdenadas[v].Peso);
+                }
+            }
+
+            return grafoAuxilir;
+        }
+
+        private bool VerificarCiclo(Queue<int> fila, int idOrigem, int idDestino, int idAtual, Grafo_Und grafoAux)
+        {
+            grafoAux.Vertices[idAtual].EstadoCor = 2;
+
+            for (int w = 0; w < grafoAux.Vertices[idAtual].ListaDeAdjacencia.Count; w++)
+            {
+                int idLaco = grafoAux.Vertices[idAtual].ListaDeAdjacencia[w].verticeConectado.ID;
+
+                if (idLaco == idOrigem)
+                {
+                    grafoAux.ResetarCores();
+                    return true;
+                }
+
+                else
+                {
+                    if (grafoAux.Vertices[idLaco].EstadoCor == 1)
+                    {
+                        fila.Enqueue(idLaco);
+                        grafoAux.Vertices[idLaco].EstadoCor = 2;
+                    }
+                }
+            }
+
+            grafoAux.Vertices[idAtual].EstadoCor = 3;
+
+            if (fila.Count > 0)
+            {
+                int prox = fila.Dequeue();
+
+                return VerificarCiclo(fila, idOrigem, idDestino, prox, grafoAux);
+            }
+
+            else
+            {
+                grafoAux.ResetarCores();
+                return false;
+            }
+        }
+
+        private Aresta[] insertionSort(Aresta[] vetor)
+        {
+            int i, j;
+
+            Aresta atual;
+
+            for (i = 1; i < vetor.Length; i++)
+            {
+                atual = vetor[i];
+                j = i;
+                while ((j > 0) && (vetor[j - 1].Peso > atual.Peso))
+                {
+                    vetor[j] = vetor[j - 1];
+                    j = j - 1;
+                }
+
+                vetor[j] = atual;
+            }
+
+            return vetor;
+        }
+
+        public void Dijkstra(int idOrigem, int idDestino)
+        {
+            int tamVet = Vertices.Length;
+            int[] vetorDistancias = new int[tamVet];
+            List<int>[] vetorCaminhos = new List<int>[tamVet];
+
+            vetorDistancias[idOrigem] = 0;
+            vetorCaminhos[idOrigem] = new List<int>();
+
+            for (int q = 0; q < tamVet; q++)
+            {
+                if (q != idOrigem)
+                {
+                    vetorDistancias[q] = int.MaxValue;
+                    vetorCaminhos[q] = new List<int>();
+                }
+            }
+
+            Dijkstra(vetorDistancias, vetorCaminhos, idOrigem, idDestino, 0);
+
+            foreach(int v in vetorDistancias)
+                Console.WriteLine(v);
+        }
+
+        private void Dijkstra(int [] vetorDistancias, List<int>[] vetorCaminhos, int atual, int idDestino, int distAnterior)
+        {
+
+            if (atual != idDestino)
+            {
+                Vertices[atual].EstadoCor = 3;
+
+                int idMenor = 0, menorCaminho = int.MaxValue;
+
+                for (int f = 0; f < Vertices[atual].ListaDeAdjacencia.Count; f++)
+                {
+                    if (Vertices[Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID].EstadoCor == 1)
+                    {
+                        int destino = Vertices[atual].ListaDeAdjacencia[f].verticeConectado.ID;
+
+                        vetorDistancias[destino] = Vertices[atual].ListaDeAdjacencia[f].Peso + distAnterior;
+
+                        vetorCaminhos[destino].Add(atual);
+
+                        if (vetorDistancias[destino] < menorCaminho && vetorDistancias[destino] != 0)
+                        {
+                            menorCaminho = vetorDistancias[destino];
+                            idMenor = destino;
+                        }
+                    }
+                }
+
+                Dijkstra(vetorDistancias, vetorCaminhos, idMenor, idDestino, vetorDistancias[idMenor]);
+            }
+
+        }
     }
 
     class Vertice
     {
-        public int ID { get; set; }
+        public int ID { get; }
         public int EstadoCor { get; set; }
         public int TempoDeDescoberta { get; set; }
         public int TempoDeFinalizacao { get; set; }
+        public int Distancia { get; set; }
         public string Rotulo { get; set; }
         public Vertice Predecessor { get; set; }
-        public List<ItemListaAdj> ListaDeAdjacencia { get; set; }
+        public List<Aresta> ListaDeAdjacencia { get; set; }
 
         public Vertice(int ID)
         {
             this.ID = ID;
-            ListaDeAdjacencia = new List<ItemListaAdj>();
+            ListaDeAdjacencia = new List<Aresta>();
             EstadoCor = 1;
             TempoDeDescoberta = -1;
             TempoDeFinalizacao = -1;
@@ -567,35 +791,12 @@ namespace MainProgram
         {
             this.ID = ID;
             this.Rotulo = Rotulo;
-            ListaDeAdjacencia = new List<ItemListaAdj>();
+            ListaDeAdjacencia = new List<Aresta>();
             EstadoCor = 1;
             TempoDeDescoberta = -1;
             TempoDeFinalizacao = -1;
             Predecessor = null;
         }
     }
-
-    class Aresta
-    { 
-        public int Peso { get; set; }
-        public Vertice V1 { get; set; }
-        public Vertice V2 { get; set; }
-        public string Classificacao { get; set; }
-
-        public Aresta(int Peso, Vertice V1, Vertice V2)
-        {
-            this.Peso = Peso;
-            this.V1 = V1;
-            this.V2 = V2;
-        }
-
-        public Aresta(Vertice V1, Vertice V2)
-        {
-            this.V1 = V1;
-            this.V2 = V2;
-            Peso = -1; //não existe peso
-        }
-    }
-
 
 }
