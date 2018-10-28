@@ -9,7 +9,7 @@ namespace Grafos
 {
     class GeradorGrafos       
     {
-        static Grafo_Und MontagemGrafoUnd(string arqName)
+        public Grafo_Und MontagemGrafoUnd(string arqName)
         {
             Grafo_Und grafo;
             StreamReader reader = new StreamReader(arqName);
@@ -32,7 +32,7 @@ namespace Grafos
             return grafo = new Grafo_Und(nVertices, lista);
         }
 
-        static Grafo_Dir MontagemGrafoDir(string arqName)
+        public Grafo_Dir MontagemGrafoDir(string arqName)
         {
             Grafo_Dir grafo;
 
