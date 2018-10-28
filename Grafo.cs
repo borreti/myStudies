@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Grafos
 {
-    class GeradorGrafos
+    class GeradorGrafos       
     {
         static Grafo_Und MontagemGrafoUnd(string arqName)
         {
