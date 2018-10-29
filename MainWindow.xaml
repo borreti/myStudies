@@ -9,10 +9,13 @@
     <Grid>
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="100" Margin="10,10,0,0" VerticalAlignment="Top" Width="370"/>
         <Button x:Name="ler_arquivo" Content="Ler arquivo" HorizontalAlignment="Left" Margin="197,84,0,0" VerticalAlignment="Top" Width="75" Click="ler_arquivo_Click"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="72,84,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="text_arq_nome" HorizontalAlignment="Left" Height="23" Margin="72,84,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <Label Content="Diretório" HorizontalAlignment="Left" Margin="10,84,0,0" VerticalAlignment="Top"/>
         <ComboBox x:Name="box_grafo_selecionado" HorizontalAlignment="Left" Margin="272,251,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="box_grafo_selecionado_SelectionChanged">
         </ComboBox>
+        <Label x:Name="label" Content="Lista de adjacência do grafo selecionado" HorizontalAlignment="Left" Margin="568,10,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="rotulo_lista_adjacencia" Content="Vazio" HorizontalAlignment="Left" Margin="568,80,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label1" Content="Legenda: vértice destino: direção: peso" HorizontalAlignment="Left" Margin="392,41,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>
