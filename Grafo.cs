@@ -246,6 +246,53 @@ namespace Grafos
 
             return indice;
         }
+        
+        //retorna uma lista com os ids do menor caminho entre dois vertices
+        public List<int> Dijkstra(int idOrigem, int idDestino)
+        {
+            //só é executado o algoritmo se o grafo for conexo
+            if (!isConexo())
+                return null;
+
+            int tamVet = Vertices.Length;
+            int[] vetorDistancias = new int[tamVet];
+            int[] vetorPredecessor = new int[tamVet];
+
+            vetorDistancias[idOrigem] = 0;
+            vetorPredecessor[idOrigem] = -1;
+
+            for (int q = 0; q < tamVet; q++)
+            {
+                if (q != idOrigem)
+                {
+                    vetorDistancias[q] = int.MaxValue;
+                    vetorPredecessor[q] = int.MaxValue;
+                }
+            }
+
+            Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, idDestino, 0);
+
+            Stack<int> pilhaIndices = new Stack<int>();
+
+            pilhaIndices.Push(idDestino);
+
+            int proxId = idDestino;
+
+            while (true)
+            {
+                pilhaIndices.Push(vetorPredecessor[proxId]);
+                proxId = vetorPredecessor[proxId];
+                if (proxId == idOrigem)
+                    break;
+            }
+
+            List<int> listaIds = new List<int>();
+
+            foreach (int valor in pilhaIndices)
+                listaIds.Add(valor);
+
+            return listaIds;
+        }
 
     }
 
@@ -893,53 +940,7 @@ namespace Grafos
             }
         }
 
-        //retorna uma lista com os ids do menor caminho entre dois vertices
-        public List<int> Dijkstra(int idOrigem, int idDestino)
-        {
-            //só é executado o algoritmo se o grafo for conexo
-            if (!isConexo())
-                return null;
-
-            int tamVet = Vertices.Length;
-            int[] vetorDistancias = new int[tamVet];
-            int[] vetorPredecessor = new int[tamVet];
-
-            vetorDistancias[idOrigem] = 0;
-            vetorPredecessor[idOrigem] = -1;
-
-            for (int q = 0; q < tamVet; q++)
-            {
-                if (q != idOrigem)
-                {
-                    vetorDistancias[q] = int.MaxValue;
-                    vetorPredecessor[q] = int.MaxValue;
-                }
-            }
-
-            Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, idDestino, 0);
-
-            Stack<int> pilhaIndices = new Stack<int>();
-
-            pilhaIndices.Push(idDestino);
-
-            int proxId = idDestino;
-
-            while (true)
-            {
-                pilhaIndices.Push(vetorPredecessor[proxId]);
-                proxId = vetorPredecessor[proxId];
-                if (proxId == idOrigem)
-                    break;
-            }
-
-            List<int> listaIds = new List<int>();
-
-            foreach (int valor in pilhaIndices)
-                listaIds.Add(valor);
-
-            return listaIds;
-        }
-
+        
         protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior)
         {
             int idMenor = -1, menorCaminho = int.MaxValue;
