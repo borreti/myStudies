@@ -465,7 +465,7 @@ namespace Grafos
 
             for (int i = 0; i < Vertices.Length; i++)
             {
-                valor += "Vertice: " + (i + 1) + ":";
+                valor += "Vertice: " + (i + 1) + ": ";
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
@@ -475,7 +475,7 @@ namespace Grafos
                         valor += ", ";
 
                     else
-                        valor += "\n";
+                        valor += "\n \n";
                 }
             }
 
@@ -825,7 +825,7 @@ namespace Grafos
             
             for (int i = 0; i < Vertices.Length; i++)
             {
-                valor+="Vertice: " + (i + 1) + ":";
+                valor+="Vertice: " + (i + 1) + ": ";
 
                 for (int j = 0; j < Vertices[i].ListaDeAdjacencia.Count; j++)
                 {
@@ -835,7 +835,7 @@ namespace Grafos
                         valor += ", ";
 
                     else
-                        valor += "\n";
+                        valor += "\n \n";
                 }
             }
 
