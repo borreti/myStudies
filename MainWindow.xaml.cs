@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Grafos;
 using System.IO;
 
 namespace Trabalho_Grafos
@@ -49,17 +48,41 @@ namespace Trabalho_Grafos
                 StreamReader reader = new StreamReader(arqName);
                 int nVertices = int.Parse(reader.ReadLine());
                 List<ParOrdenado> lista = new List<ParOrdenado>();
+                string[] vetorNomes = new string[nVertices];
+
+                int verticesLidos = 0;
 
                 while (!reader.EndOfStream)
                 {
                     int x, y, direcao;
                     Peso peso;
                     string linha = reader.ReadLine();
+                    string rotulo1, rotulo2;
+
                     string[] vetSplit = linha.Split(';');
-                    x = int.Parse(vetSplit[0]) - 1;
-                    y = int.Parse(vetSplit[1]) - 1;
+                    rotulo1 = vetSplit[0];
+                    rotulo2 = vetSplit[1];
+
+                    x = BuscarIndiceRotulo(vetorNomes, rotulo1);
+
+                    if (x == -1)
+                    {
+                        vetorNomes[verticesLidos] = rotulo1;
+                        x = verticesLidos;
+                        verticesLidos++;
+                    }
+
+                    y = BuscarIndiceRotulo(vetorNomes, rotulo2);
+
+                    if (y == -1)
+                    {
+                        vetorNomes[verticesLidos] = rotulo2;
+                        y = verticesLidos;
+                        verticesLidos++;
+                    }
+
                     peso = TratarPesos(vetSplit[3], vetSplit[4]);
-                    direcao = int.Parse(vetSplit[3]);
+                    direcao = int.Parse(vetSplit[2]);
 
                     if (direcao == -1)
                     {
@@ -76,8 +99,8 @@ namespace Trabalho_Grafos
 
                 text_arq_nome.Clear();
 
-                grafoDir = new Grafo_Dir(nVertices, lista);
-                grafoUnd = new Grafo_Und(nVertices, lista);
+                grafoDir = new Grafo_Dir(nVertices, lista, vetorNomes);
+                grafoUnd = new Grafo_Und(nVertices, lista, vetorNomes);
                 ListaGrafosDirigidos.Add(grafoDir);
                 ListaGrafosNaoDirigido.Add(grafoUnd);
 
@@ -86,12 +109,12 @@ namespace Trabalho_Grafos
                 MessageBox.Show("Novo grafo incluido na memória", "Arquivo foi lido com sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
-            catch(ArgumentException ex)
+            catch (ArgumentException ex)
             {
-                MessageBox.Show(ex.Message,"Erro ao tentar ler o arquivo", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Erro ao tentar ler o arquivo", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            catch(FileNotFoundException ex)
+            catch (FileNotFoundException ex)
             {
                 MessageBox.Show(ex.Message, "Erro ao tentar ler o arquivo", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -99,16 +122,64 @@ namespace Trabalho_Grafos
 
         private Peso TratarPesos(string dist, string duracao_Voo)
         {
-            string[] vetSplit = dist.Split(':');
+            string[] vetorSplit = duracao_Voo.Split(':');
 
-            int distancia = int.Parse(duracao_Voo), duracaoVoo = 0;
+            int distancia = int.Parse(dist), duracaoVoo = 0;
 
-            duracaoVoo += int.Parse(vetSplit[0]) * 60;
-            duracaoVoo += int.Parse(vetSplit[1]);
+            duracaoVoo += int.Parse(vetorSplit[0]) * 60;
+            duracaoVoo += int.Parse(vetorSplit[1]);
 
             Peso p = new Peso(distancia, duracaoVoo);
 
             return p;
+        }
+
+        private int BuscarIndiceRotulo(string [] vetorRotulos, string rotuloAtual)
+        {
+            for (int t = 0; t < vetorRotulos.Length; t++)
+            {
+                if (vetorRotulos[t] == rotuloAtual)
+                    return t;
+            }
+
+            return -1;
+        }
+
+        private void btn_viagem_minima_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int tipoPeso = 0;
+
+                if (radio_0.IsChecked == true)
+                    tipoPeso = 0;
+
+                else if (radio_1.IsChecked == true)
+                    tipoPeso = 1;
+
+                else if (radio_2.IsChecked == true)
+                    tipoPeso = 2;
+
+                List<int> caminho;
+
+                if (tipoPeso < 2)
+                {
+                    caminho = ListaGrafosNaoDirigido[int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1].Dijkstra(1, 2, tipoPeso);
+
+                    string x = "";
+
+                    foreach (int ex in caminho)
+                        x += ex + ", ";
+
+                    MessageBox.Show(x);
+                }
+
+            }
+
+            catch(NullReferenceException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }
