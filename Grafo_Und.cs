@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ namespace Trabalho_Grafos
 {
     class Grafo_Und : Grafo
     {
-        public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares, string [] vetorRotulos)
+        public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares, string[] vetorRotulos)
         {
             Vertices = new Vertice[numeroDeVertices];
 
@@ -78,25 +78,6 @@ namespace Trabalho_Grafos
                 return isCompleto(indice);
             else
                 return true;
-        }
-
-        public override bool isConexo()
-        {
-            for (int i = 0; i < Vertices.Length; i++)
-            {
-                int val = 0;
-                Vertice v1 = Vertices[i];
-                for (int j = 0; j < v1.ListaDeAdjacencia.Count; j++)
-                {
-                    if (v1 != v1.ListaDeAdjacencia[j].verticeDestino)
-                        val++;
-                }
-
-                if (val == 0)
-                    return false;
-            }
-
-            return true;
         }
 
         public override Grafo getComplementar()
@@ -196,7 +177,7 @@ namespace Trabalho_Grafos
                 }
             }
 
-            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray(),0);
+            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray(), 0);
             //dados processados e arestas já ordenadas
 
             //para cada aresta no vetor de aresta
@@ -316,6 +297,34 @@ namespace Trabalho_Grafos
 
             if (idMenor != -1)
                 Dijkstra(vetorDistancias, vetorPredecessor, idMenor, idDestino, vetorDistancias[idMenor], nPeso);
+        }
+
+        protected override void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
+        {
+            for (int q = 0; q < Vertices[atual].ListaDeAdjacencia.Count; q++)
+            {
+                int idV = Vertices[atual].ListaDeAdjacencia[q].verticeDestino.ID;
+
+                if (Vertices[idV].EstadoCor == 1)
+                {
+                    Vertices[idV].EstadoCor = 2;
+                    Vertices[idV].Distancia = distancia;
+                    Vertices[idV].TempoDeDescoberta = tempo;
+                    Vertices[idV].Predecessor = Vertices[atual];
+                    fila.Enqueue(idV);
+                    tempo++;
+                }
+            }
+
+            tempo++;
+            Vertices[atual].TempoDeFinalizacao = tempo;
+            Vertices[atual].EstadoCor = 3;
+
+            if (fila.Count > 0)
+            {
+                int novoAtual = fila.Dequeue();
+                TravessiaEmAplitude(distancia + 1, tempo, novoAtual, fila);
+            }
         }
     }
 }
