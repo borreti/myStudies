@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ namespace Trabalho_Grafos
 {
     abstract class Grafo
     {
-        protected Vertice[] Vertices;
+        public Vertice[] Vertices;
 
         protected void FormarNovaAresta(int idV1, int idV2, Peso pesos, List<Horario> listaVoos)
         {
@@ -29,8 +29,6 @@ namespace Trabalho_Grafos
 
         protected abstract void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior, int nPeso);
 
-        public abstract bool isConexo();
-
         public abstract int getGrau(Vertice v1);
 
         public abstract bool isAdjacente(Vertice v1, Vertice v2);
@@ -40,6 +38,8 @@ namespace Trabalho_Grafos
         public abstract bool isEuleriano();
 
         public abstract string ListaDeAdjacencia();
+
+        protected abstract void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila);
 
         public Vertice SelecionarVertice(int indice)
         {
@@ -235,6 +235,31 @@ namespace Trabalho_Grafos
             ResetarCores();
 
             return listaIds;
+        }
+
+        public void TravessiaEmAplitude()
+        {
+            ResetarCores();
+            int vInicial = 0;
+            Vertices[vInicial].EstadoCor = 2;
+            Vertices[vInicial].Distancia = 0;
+            Vertices[vInicial].TempoDeDescoberta = 0;
+            Queue<int> fila = new Queue<int>();
+            TravessiaEmAplitude(1, 1, vInicial, fila);
+        }
+
+        public bool isConexo()
+        {
+            TravessiaEmAplitude();
+
+            for (int e = 0; e < Vertices.Length; e++)
+            {
+                if (Vertices[e].EstadoCor == 1)
+                    return false;
+            }
+
+            ResetarCores();
+            return true;
         }
 
     }
