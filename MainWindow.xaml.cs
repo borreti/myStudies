@@ -166,10 +166,12 @@ namespace Trabalho_Grafos
                 {
                     caminho = ListaGrafosNaoDirigido[int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1].Dijkstra(1, 2, tipoPeso);
 
+                    Vertice[] vetorVertices = ListaGrafosNaoDirigido[int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1].Vertices;
+
                     string x = "";
 
                     foreach (int ex in caminho)
-                        x += ex + ", ";
+                        x += vetorVertices[ex].Rotulo + ",";
 
                     MessageBox.Show(x);
                 }
