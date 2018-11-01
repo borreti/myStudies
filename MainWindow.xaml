@@ -5,22 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Trabalho_Grafos"
         mc:Ignorable="d"
-        Title="MainWindow" Height="447.935" Width="828.44">
+        Title="MainWindow" Height="447.935" Width="930.95">
     <Grid>
-        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="100" Margin="10,10,0,0" VerticalAlignment="Top" Width="370"/>
-        <Button x:Name="ler_arquivo" Content="Ler arquivo" HorizontalAlignment="Left" Margin="197,84,0,0" VerticalAlignment="Top" Width="75" Click="ler_arquivo_Click"/>
-        <TextBox x:Name="text_arq_nome" HorizontalAlignment="Left" Height="23" Margin="72,84,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <Label Content="Diretório" HorizontalAlignment="Left" Margin="10,84,0,0" VerticalAlignment="Top"/>
-        <ComboBox x:Name="box_grafo_selecionado" HorizontalAlignment="Left" Margin="392,153,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="box_grafo_selecionado_SelectionChanged">
+        <Button x:Name="ler_arquivo" Content="Ler arquivo" HorizontalAlignment="Left" Margin="220,21,0,0" VerticalAlignment="Top" Width="75" Click="ler_arquivo_Click"/>
+        <TextBox x:Name="text_arq_nome" HorizontalAlignment="Left" Height="23" Margin="79,21,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label Content="Diretório" HorizontalAlignment="Left" Margin="17,18,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name="box_grafo_selecionado" HorizontalAlignment="Left" Margin="146,65,0,0" VerticalAlignment="Top" Width="106" SelectionChanged="box_grafo_selecionado_SelectionChanged">
         </ComboBox>
-        <Label x:Name="label" Content="Lista de adjacência do grafo selecionado" HorizontalAlignment="Left" Margin="568,10,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="rotulo_lista_adjacencia" Content="Vazio" HorizontalAlignment="Left" Margin="568,80,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="label1" Content="Legenda: vértice destino: direção: peso" HorizontalAlignment="Left" Margin="392,41,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label" Content="Lista de adjacência do grafo selecionado" HorizontalAlignment="Left" Margin="553,21,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="rotulo_lista_adjacencia" Content="Vazio" HorizontalAlignment="Left" Margin="553,83,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label1" Content="Legenda: vértice destino: direção: peso" HorizontalAlignment="Left" Margin="553,52,0,0" VerticalAlignment="Top"/>
         <Button x:Name="btn_viagem_minima" Content="Obter" HorizontalAlignment="Left" Margin="72,343,0,0" VerticalAlignment="Top" Width="75" Click="btn_viagem_minima_Click"/>
         <RadioButton x:Name="radio_0" Content="Distância" HorizontalAlignment="Left" Margin="10,261,0,0" VerticalAlignment="Top" IsChecked="True"/>
         <RadioButton x:Name="radio_1" Content="Duração" HorizontalAlignment="Left" Margin="134,261,0,0" VerticalAlignment="Top"/>
         <RadioButton x:Name="radio_2" Content="Número de conexões" HorizontalAlignment="Left" Margin="36,301,0,0" VerticalAlignment="Top"/>
         <Label Content="Escolher rota mínima por:" HorizontalAlignment="Left" Margin="36,230,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name="box_aeroporto_origem" HorizontalAlignment="Left" Margin="293,230,0,0" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="box_aeroporto_destino" HorizontalAlignment="Left" Margin="458,230,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="label2" Content="Aeroporto de origem" HorizontalAlignment="Left" Margin="293,199,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label2_Copy" Content="Aeroporto de destino" HorizontalAlignment="Left" Margin="458,199,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label3" Content="Grafo selecionado" HorizontalAlignment="Left" Margin="17,65,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>
