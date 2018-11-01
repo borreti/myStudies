@@ -237,10 +237,9 @@ namespace Trabalho_Grafos
             return listaIds;
         }
 
-        public void TravessiaEmAplitude()
+        public void TravessiaEmAplitude(int vInicial)
         {
             ResetarCores();
-            int vInicial = 0;
             Vertices[vInicial].EstadoCor = 2;
             Vertices[vInicial].Distancia = 0;
             Vertices[vInicial].TempoDeDescoberta = 0;
@@ -250,7 +249,7 @@ namespace Trabalho_Grafos
 
         public bool isConexo()
         {
-            TravessiaEmAplitude();
+            TravessiaEmAplitude(0);
 
             for (int e = 0; e < Vertices.Length; e++)
             {
