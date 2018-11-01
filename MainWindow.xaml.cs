@@ -35,6 +35,17 @@ namespace Trabalho_Grafos
             int index = int.Parse(box_grafo_selecionado.SelectedItem.ToString());
             index--;
             rotulo_lista_adjacencia.Content = ListaGrafosDirigidos[index].ListaDeAdjacencia();
+            PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[index]);
+            PreencherComboBox(box_aeroporto_destino, ListaGrafosDirigidos[index]);
+        }
+
+        private void PreencherComboBox(ComboBox box, Grafo grafo)
+        {
+            box.Items.Clear();
+            Vertice[] vetorV = grafo.Vertices;
+
+            foreach (Vertice item in vetorV)
+                box.Items.Add(item.Rotulo);
         }
 
         private void ler_arquivo_Click(object sender, RoutedEventArgs e)
@@ -145,11 +156,30 @@ namespace Trabalho_Grafos
             return -1;
         }
 
+        private int BuscarIndiceRotulo(Vertice[] vertices, string rotuloAtual)
+        {
+            for (int b = 0; b < vertices.Length; b++)
+            {
+                if (vertices[b].Rotulo == rotuloAtual)
+                    return b;
+            }
+
+            return -1;
+        }
+
         private void btn_viagem_minima_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 int tipoPeso = 0;
+                int indiceAcesso = int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1;
+                int origem, destino;
+                string aeOrigem, aeDestino;
+
+                aeOrigem = box_aeroporto_origem.SelectedItem.ToString();
+                aeDestino = box_aeroporto_destino.SelectedItem.ToString();
+                origem = BuscarIndiceRotulo(ListaGrafosDirigidos[indiceAcesso].Vertices, aeOrigem);
+                destino = BuscarIndiceRotulo(ListaGrafosDirigidos[indiceAcesso].Vertices, aeDestino);
 
                 if (radio_0.IsChecked == true)
                     tipoPeso = 0;
@@ -160,20 +190,23 @@ namespace Trabalho_Grafos
                 else if (radio_2.IsChecked == true)
                     tipoPeso = 2;
 
-                List<int> caminho;
+                List<int> listaCaminho;
+                string caminho = "";
+                Vertice[] vetorVertices;
 
                 if (tipoPeso < 2)
                 {
-                    caminho = ListaGrafosNaoDirigido[int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1].Dijkstra(1, 2, tipoPeso);
+                    listaCaminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso);
 
-                    Vertice[] vetorVertices = ListaGrafosNaoDirigido[int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1].Vertices;
+                    vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
 
-                    string x = "";
+                    foreach (int ex in listaCaminho)
+                        caminho += vetorVertices[ex].Rotulo + ",";
+                }
 
-                    foreach (int ex in caminho)
-                        x += vetorVertices[ex].Rotulo + ",";
-
-                    MessageBox.Show(x);
+                else if (tipoPeso == 3)
+                {
+                    ListaGrafosDirigidos[indiceAcesso].TravessiaEmAplitude(origem);
                 }
 
             }
