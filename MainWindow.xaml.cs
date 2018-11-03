@@ -21,6 +21,7 @@ namespace Trabalho_Grafos
     /// </summary>
     public partial class MainWindow : Window
     {
+        int indiceAcesso = 0;
         int nGrafos = 0;
         List<Grafo_Und> ListaGrafosNaoDirigido = new List<Grafo_Und>();
         List<Grafo_Dir> ListaGrafosDirigidos = new List<Grafo_Dir>();
@@ -34,9 +35,21 @@ namespace Trabalho_Grafos
         {
             int index = int.Parse(box_grafo_selecionado.SelectedItem.ToString());
             index--;
-            rotulo_lista_adjacencia.Content = ListaGrafosDirigidos[index].ListaDeAdjacencia();
+            grid_lista_adjacencia.Items.Clear();
             PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[index]);
             PreencherComboBox(box_aeroporto_destino, ListaGrafosDirigidos[index]);
+            box_grafo_selecionado.SelectedIndex = box_grafo_selecionado.Items.Count - 1;
+            box_aeroporto_origem.SelectedIndex = 0;
+            box_aeroporto_destino.SelectedIndex = box_aeroporto_destino.Items.Count - 1;
+
+            for (int ps = 0; ps < ListaGrafosDirigidos[index].Vertices.Length; ps++)
+            {
+                for (int fs = 0; fs < ListaGrafosDirigidos[index].Vertices[ps].ListaDeAdjacencia.Count; fs++)
+                {
+                    if (ListaGrafosDirigidos[index].Vertices[ps].ListaDeAdjacencia[fs].Direcao == 1)
+                    grid_lista_adjacencia.Items.Add(ListaGrafosDirigidos[index].Vertices[ps].ListaDeAdjacencia[fs]);
+                }
+            }
         }
 
         private void PreencherComboBox(ComboBox box, Grafo grafo)
@@ -102,7 +115,19 @@ namespace Trabalho_Grafos
                         y = aux;
                     }
 
-                    ParOrdenado par = new ParOrdenado(x, y, peso);
+                    List<Horario> ListaHorarios = new List<Horario>();
+
+                    for (int r = 5; r < vetSplit.Length; r++)
+                    {
+                        string [] novoVet = vetSplit[r].Split(':');
+                        int hora = int.Parse(novoVet[0]);
+                        int minuto = int.Parse(novoVet[1]);
+                        Horario hr = new Horario(hora, minuto);
+                        ListaHorarios.Add(hr);
+                    }
+
+
+                    ParOrdenado par = new ParOrdenado(x, y, peso, ListaHorarios);
                     lista.Add(par);
                 }
 
@@ -117,6 +142,9 @@ namespace Trabalho_Grafos
 
                 nGrafos++;
                 box_grafo_selecionado.Items.Add(nGrafos);
+                box_grafo_selecionado.SelectedIndex = box_grafo_selecionado.Items.Count - 1;
+                box_aeroporto_origem.SelectedIndex = 0;
+                box_aeroporto_destino.SelectedIndex = box_aeroporto_destino.Items.Count - 1;
                 MessageBox.Show("Novo grafo incluido na memória", "Arquivo foi lido com sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
@@ -128,6 +156,11 @@ namespace Trabalho_Grafos
             catch (FileNotFoundException ex)
             {
                 MessageBox.Show(ex.Message, "Erro ao tentar ler o arquivo", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            catch(FormatException ex)
+            {
+                MessageBox.Show("Arquivo com formatação incorreta", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -145,7 +178,7 @@ namespace Trabalho_Grafos
             return p;
         }
 
-        private int BuscarIndiceRotulo(string [] vetorRotulos, string rotuloAtual)
+        private int BuscarIndiceRotulo(string[] vetorRotulos, string rotuloAtual)
         {
             for (int t = 0; t < vetorRotulos.Length; t++)
             {
@@ -172,7 +205,7 @@ namespace Trabalho_Grafos
             try
             {
                 int tipoPeso = 0;
-                int indiceAcesso = int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1;
+                indiceAcesso = int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1;
                 int origem, destino;
                 string aeOrigem, aeDestino;
 
@@ -190,31 +223,81 @@ namespace Trabalho_Grafos
                 else if (radio_2.IsChecked == true)
                     tipoPeso = 2;
 
-                List<int> listaCaminho;
+                else if (radio_3.IsChecked == true)
+                    tipoPeso = 3;
+
+                List<int> listaCaminho = new List<int>();
                 string caminho = "";
-                Vertice[] vetorVertices;
+                Vertice[] vetorVertices = null;
 
                 if (tipoPeso < 2)
                 {
-                    listaCaminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso);
-
                     vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
+                    //tratado na classe grafo
+                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso);
+                }
+
+                //tratato no próprio evento
+                else if (tipoPeso == 2)
+                {
+                    ListaGrafosDirigidos[indiceAcesso].TravessiaEmAplitude(origem);
+                    vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
+
+                    Vertice predecessor = vetorVertices[destino].Predecessor;
+                    listaCaminho.Add(destino);
+
+                    while (predecessor != null)
+                    {
+                        listaCaminho.Add(predecessor.ID);
+                        predecessor = predecessor.Predecessor;
+                    }
+
+                    List<int> auxLista = listaCaminho;
+
+                    listaCaminho = new List<int>();
+
+                    for (int d = auxLista.Count - 1; d >= 0; d--)
+                        listaCaminho.Add(auxLista[d]);
 
                     foreach (int ex in listaCaminho)
                         caminho += vetorVertices[ex].Rotulo + ",";
+
+                    int tam = caminho.Length;
+                    caminho = caminho.Substring(0, caminho.Length - 1);
+                    caminho += "\nPeso total: " + listaCaminho.Count;
                 }
 
                 else if (tipoPeso == 3)
                 {
-                    ListaGrafosDirigidos[indiceAcesso].TravessiaEmAplitude(origem);
+                    vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
+                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso);
                 }
 
+                MessageBox.Show(caminho, "Rota disponível", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
-            catch(NullReferenceException ex)
+            catch (NullReferenceException ex)
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void btn_arvore_minima_Click(object sender, RoutedEventArgs e)
+        {
+            Grafo_Und gd = ListaGrafosNaoDirigido[indiceAcesso].Kruskal();
+
+            string mensagem = gd.ListaDeAdjacencia();
+
+            int nArestas = 0;
+
+            for (int l = 0; l < gd.Vertices.Length; l++)
+                nArestas += gd.Vertices[l].ListaDeAdjacencia.Count;
+
+            nArestas /= 2;
+
+            mensagem += "\n\nSerão necessárias " + nArestas + " aeronaves para realizar os serviços de entrega entre os aeroportos";
+
+            MessageBox.Show(mensagem, "Lista de adjacência com as rotas de custo minímo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
