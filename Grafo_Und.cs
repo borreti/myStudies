@@ -8,7 +8,7 @@ namespace Trabalho_Grafos
 {
     class Grafo_Und : Grafo
     {
-        public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares, string[] vetorRotulos)
+        public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares, string [] vetorRotulos)
         {
             Vertices = new Vertice[numeroDeVertices];
 
@@ -144,7 +144,7 @@ namespace Trabalho_Grafos
                 {
                     Aresta a = Vertices[i].ListaDeAdjacencia[j];
 
-                    valor += (a.verticeDestino.ID + 1) + ":" + a.Pesos.Distancia;
+                    valor += (a.verticeDestino.Rotulo) + ":" + a.Pesos.Distancia;
 
                     if (j != Vertices[i].ListaDeAdjacencia.Count - 1)
                         valor += ", ";
@@ -168,6 +168,9 @@ namespace Trabalho_Grafos
             List<ParOrdenado> pares = new List<ParOrdenado>();
             Grafo_Und grafoAuxilir = new Grafo_Und(Vertices.Length, pares);
 
+            for (int a = 0; a < grafoAuxilir.Vertices.Length; a++)
+                grafoAuxilir.Vertices[a].Rotulo = this.Vertices[a].Rotulo;
+
             for (int g = 0; g < Vertices.Length; g++)
             {
                 for (int a = 0; a < Vertices[g].ListaDeAdjacencia.Count; a++)
@@ -177,7 +180,7 @@ namespace Trabalho_Grafos
                 }
             }
 
-            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray(), 0);
+            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray(),0);
             //dados processados e arestas já ordenadas
 
             //para cada aresta no vetor de aresta
@@ -255,75 +258,76 @@ namespace Trabalho_Grafos
             }
         }
 
-        protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior, int nPeso)
+        protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso, Horario horarioAtual)
         {
-            int idMenor = -1, menorCaminho = int.MaxValue;
+            int idMenor = -1;
 
+            Vertices[atual].EstadoCor = 3;
+
+            //para todo item da lista de adjacencia, com direção 1
             for (int f = 0; f < Vertices[atual].ListaDeAdjacencia.Count; f++)
             {
                 int indexDestino = Vertices[atual].ListaDeAdjacencia[f].verticeDestino.ID;
 
                 if (Vertices[indexDestino].EstadoCor == 1)
                 {
-                    int destino = Vertices[atual].ListaDeAdjacencia[f].verticeDestino.ID;
-
                     int dist = 0;
 
                     if (nPeso == 0)
-                        dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.Distancia + distAnterior;
-
-                    else if (nPeso == 1)
-                        dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + distAnterior;
-
-                    if (dist < vetorDistancias[destino])
                     {
-                        vetorPredecessor[destino] = atual;
-                        vetorDistancias[destino] = dist;
+                        dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.Distancia + vetorDistancias[atual];
                     }
 
-                    if (vetorDistancias[destino] < menorCaminho && vetorDistancias[destino] != 0)
+                    else if (nPeso == 1)
                     {
-                        menorCaminho = vetorDistancias[destino];
-                        idMenor = destino;
+                        dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + vetorDistancias[atual];
+                    }
+
+                    else if (nPeso == 3)
+                    {
+                        int tempoEmEspera = Horario.CalcularTempoEmEspera(Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos, horarioAtual);
+                        dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + vetorDistancias[atual] + tempoEmEspera;
+                        horarioAtual.Minuto += tempoEmEspera;
+                    }
+
+                    if (dist < vetorDistancias[indexDestino])
+                    {
+                        vetorPredecessor[indexDestino] = atual;
+                        vetorDistancias[indexDestino] = dist;
                     }
                 }
             }
 
-            Vertices[atual].EstadoCor = 3;
-
-            if (idMenor == -1)
-                idMenor = BuscarVerticeAberto(vetorDistancias);
-
+            idMenor = BuscarVerticeAberto(vetorDistancias);
 
             if (idMenor != -1)
-                Dijkstra(vetorDistancias, vetorPredecessor, idMenor, idDestino, vetorDistancias[idMenor], nPeso);
+                Dijkstra(vetorDistancias, vetorPredecessor, idMenor, nPeso, horarioAtual);
         }
 
         protected override void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
         {
-            for (int q = 0; q < Vertices[atual].ListaDeAdjacencia.Count; q++)
+            for (int w = 0; w < Vertices[atual].ListaDeAdjacencia.Count; w++)
             {
-                int idV = Vertices[atual].ListaDeAdjacencia[q].verticeDestino.ID;
+                int indice = Vertices[atual].ListaDeAdjacencia[w].verticeDestino.ID;
 
-                if (Vertices[idV].EstadoCor == 1)
+                if (Vertices[indice].EstadoCor == 1)
                 {
-                    Vertices[idV].EstadoCor = 2;
-                    Vertices[idV].Distancia = distancia;
-                    Vertices[idV].TempoDeDescoberta = tempo;
-                    Vertices[idV].Predecessor = Vertices[atual];
-                    fila.Enqueue(idV);
+                    Vertices[indice].EstadoCor = 2;
+                    Vertices[indice].Predecessor = Vertices[atual];
+                    Vertices[indice].TempoDeDescoberta = tempo;
                     tempo++;
+                    fila.Enqueue(indice);
                 }
             }
 
-            tempo++;
             Vertices[atual].TempoDeFinalizacao = tempo;
             Vertices[atual].EstadoCor = 3;
+            tempo++;
 
             if (fila.Count > 0)
             {
-                int novoAtual = fila.Dequeue();
-                TravessiaEmAplitude(distancia + 1, tempo, novoAtual, fila);
+                int novoIndice = fila.Dequeue();
+                TravessiaEmAplitude(distancia, tempo, novoIndice, fila);
             }
         }
     }
