@@ -27,7 +27,7 @@ namespace Trabalho_Grafos
         }
 
 
-        protected abstract void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int idDestino, int distAnterior, int nPeso);
+        protected abstract void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso, Horario horarioAtual);
 
         public abstract int getGrau(Vertice v1);
 
@@ -120,45 +120,46 @@ namespace Trabalho_Grafos
         {
             //nPeso = 0 --> distancia
             //npeso = 1 --> duracao do voo em minutos
-            int i, j;
+            int k, y;
 
             Aresta atual;
 
-            for (i = 1; i < vetor.Length; i++)
+            for (k = 1; k < vetor.Length; k++)
             {
                 int pesoVet = 0;
                 int pesoAtual = 0;
 
-                atual = vetor[i];
-                j = i;
+                atual = vetor[k];
+                y = k;
 
                 //ordenar pela menor distancia
                 if (nPeso == 0)
                 {
-                    pesoVet = vetor[j - 1].Pesos.Distancia;
+                    pesoVet = vetor[y - 1].Pesos.Distancia;
                     pesoAtual = atual.Pesos.Distancia;
                 }
 
                 //ordenar pela duração do voo
                 else if (nPeso == 1)
                 {
-                    pesoVet = vetor[j - 1].Pesos.DuracaoDoVoo;
+                    pesoVet = vetor[y - 1].Pesos.DuracaoDoVoo;
                     pesoAtual = atual.Pesos.DuracaoDoVoo;
                 }
 
-                while ((j > 0) && (pesoVet > pesoAtual))
+                while ((y > 0) && (pesoVet > pesoAtual))
                 {
-                    vetor[j] = vetor[j - 1];
-                    j = j - 1;
+                    vetor[y] = vetor[y - 1];
 
                     if (nPeso == 0)
-                        pesoVet = vetor[j - 1].Pesos.Distancia;
+                        pesoVet = vetor[y - 1].Pesos.Distancia;
 
                     else if (nPeso == 1)
-                        pesoVet = vetor[j - 1].Pesos.DuracaoDoVoo;
+                        pesoVet = vetor[y - 1].Pesos.DuracaoDoVoo;
+
+                    y = y - 1;
                 }
 
-                vetor[j] = atual;
+                vetor[y] = atual;
             }
 
             return vetor;
@@ -184,16 +185,14 @@ namespace Trabalho_Grafos
             return indice;
         }
 
-        //retorna uma lista com os ids do menor caminho entre dois vertices
-        public List<int> Dijkstra(int idOrigem, int idDestino, int nPeso)
+        //retorna uma string com os aeroportos na ordem e a informação do peso total
+        public string Dijkstra(int idOrigem, int idDestino, int nPeso)
         {
             /*nPeso = 0 --> Dijkstra por distancia
              *nPeso = 1 --> Dijkstra por tempo total de voo
+             *nPeso = 2 --> Travessia em amplitude buscando o menor número de conexões
             */
-
-            //só é executado o algoritmo se o grafo for conexo
-            if (!isConexo())
-                return null;
+            ResetarCores();
 
             int tamVet = Vertices.Length;
             int[] vetorDistancias = new int[tamVet];
@@ -210,8 +209,9 @@ namespace Trabalho_Grafos
                     vetorPredecessor[q] = -1;
                 }
             }
+            Horario now = new Horario(DateTime.Now.Hour, DateTime.Now.Minute);
 
-            Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, idDestino, 0, nPeso);
+            Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, nPeso, now);
 
             Stack<int> pilhaIndices = new Stack<int>();
 
@@ -219,12 +219,10 @@ namespace Trabalho_Grafos
 
             int proxId = idDestino;
 
-            while (true)
+            while (proxId != idOrigem)
             {
                 pilhaIndices.Push(vetorPredecessor[proxId]);
                 proxId = vetorPredecessor[proxId];
-                if (proxId == idOrigem)
-                    break;
             }
 
             List<int> listaIds = new List<int>();
@@ -232,9 +230,19 @@ namespace Trabalho_Grafos
             foreach (int valor in pilhaIndices)
                 listaIds.Add(valor);
 
+            string caminho = "";
+
+            foreach (int ex in listaIds)
+                caminho += Vertices[ex].Rotulo + ",";
+
+            int tam = caminho.Length;
+            caminho = caminho.Substring(0, caminho.Length - 1);
+
+            caminho += "\nPeso total: " + vetorDistancias[idDestino];
+
             ResetarCores();
 
-            return listaIds;
+            return caminho;
         }
 
         public void TravessiaEmAplitude(int vInicial)
@@ -243,6 +251,7 @@ namespace Trabalho_Grafos
             Vertices[vInicial].EstadoCor = 2;
             Vertices[vInicial].Distancia = 0;
             Vertices[vInicial].TempoDeDescoberta = 0;
+            Vertices[vInicial].Predecessor = null;
             Queue<int> fila = new Queue<int>();
             TravessiaEmAplitude(1, 1, vInicial, fila);
         }
@@ -251,6 +260,8 @@ namespace Trabalho_Grafos
         {
             TravessiaEmAplitude(0);
 
+            //se houver um vertice que não foi visitado, significa que o grafo não é conexo
+            
             for (int e = 0; e < Vertices.Length; e++)
             {
                 if (Vertices[e].EstadoCor == 1)
@@ -260,8 +271,5 @@ namespace Trabalho_Grafos
             ResetarCores();
             return true;
         }
-
     }
-
-
 }
