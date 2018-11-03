@@ -5,26 +5,34 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Trabalho_Grafos"
         mc:Ignorable="d"
-        Title="MainWindow" Height="447.935" Width="930.95">
+        Title="MainWindow" Height="461.135" Width="1074.95">
     <Grid>
         <Button x:Name="ler_arquivo" Content="Ler arquivo" HorizontalAlignment="Left" Margin="220,21,0,0" VerticalAlignment="Top" Width="75" Click="ler_arquivo_Click"/>
         <TextBox x:Name="text_arq_nome" HorizontalAlignment="Left" Height="23" Margin="79,21,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <Label Content="Diretório" HorizontalAlignment="Left" Margin="17,18,0,0" VerticalAlignment="Top"/>
         <ComboBox x:Name="box_grafo_selecionado" HorizontalAlignment="Left" Margin="146,65,0,0" VerticalAlignment="Top" Width="106" SelectionChanged="box_grafo_selecionado_SelectionChanged">
         </ComboBox>
-        <Label x:Name="label" Content="Lista de adjacência do grafo selecionado" HorizontalAlignment="Left" Margin="553,21,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="rotulo_lista_adjacencia" Content="Vazio" HorizontalAlignment="Left" Margin="553,83,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="label1" Content="Legenda: vértice destino: direção: peso" HorizontalAlignment="Left" Margin="553,52,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="btn_viagem_minima" Content="Obter" HorizontalAlignment="Left" Margin="72,343,0,0" VerticalAlignment="Top" Width="75" Click="btn_viagem_minima_Click"/>
-        <RadioButton x:Name="radio_0" Content="Distância" HorizontalAlignment="Left" Margin="10,261,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <RadioButton x:Name="radio_1" Content="Duração" HorizontalAlignment="Left" Margin="134,261,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="radio_2" Content="Número de conexões" HorizontalAlignment="Left" Margin="36,301,0,0" VerticalAlignment="Top"/>
-        <Label Content="Escolher rota mínima por:" HorizontalAlignment="Left" Margin="36,230,0,0" VerticalAlignment="Top"/>
-        <ComboBox x:Name="box_aeroporto_origem" HorizontalAlignment="Left" Margin="293,230,0,0" VerticalAlignment="Top" Width="120"/>
-        <ComboBox x:Name="box_aeroporto_destino" HorizontalAlignment="Left" Margin="458,230,0,0" VerticalAlignment="Top" Width="120"/>
-        <Label x:Name="label2" Content="Aeroporto de origem" HorizontalAlignment="Left" Margin="293,199,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="label2_Copy" Content="Aeroporto de destino" HorizontalAlignment="Left" Margin="458,199,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btn_viagem_minima" Content="Obter rota" HorizontalAlignment="Left" Margin="220,320,0,0" VerticalAlignment="Top" Width="75" Click="btn_viagem_minima_Click"/>
+        <RadioButton x:Name="radio_0" Content="Distância" HorizontalAlignment="Left" Margin="10,170,0,0" VerticalAlignment="Top" IsChecked="True"/>
+        <RadioButton x:Name="radio_1" Content="Tempo de voo" HorizontalAlignment="Left" Margin="124,170,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="radio_2" Content="Número de conexões" HorizontalAlignment="Left" Margin="238,170,0,0" VerticalAlignment="Top"/>
+        <Label Content="Busque a menor rota selecionando um dos parametros abaixo" HorizontalAlignment="Left" Margin="92,124,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <ComboBox x:Name="box_aeroporto_origem" HorizontalAlignment="Left" Margin="52,270,0,0" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="box_aeroporto_destino" HorizontalAlignment="Left" Margin="357,270,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="label2" Content="Aeroporto de origem" HorizontalAlignment="Left" Margin="50,226,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label2_Copy" Content="Aeroporto de destino" HorizontalAlignment="Left" Margin="353,226,0,0" VerticalAlignment="Top"/>
         <Label x:Name="label3" Content="Grafo selecionado" HorizontalAlignment="Left" Margin="17,65,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btn_arvore_minima" Content="Gerar arvore miníma do grafo" HorizontalAlignment="Left" Margin="306,65,0,0" VerticalAlignment="Top" Width="171" Click="btn_arvore_minima_Click"/>
+        <RadioButton x:Name="radio_3" Content="Duração total da viagem" HorizontalAlignment="Left" Margin="402,170,0,0" VerticalAlignment="Top"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="228" Margin="10,124,0,0" VerticalAlignment="Top" Width="581"/>
+        <DataGrid x:Name="grid_lista_adjacencia" HorizontalAlignment="Left" Height="228" Margin="617,124,0,0" VerticalAlignment="Top" Width="440" IsSynchronizedWithCurrentItem="False" IsEnabled="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Origem" Width="auto" Binding="{Binding verticeOrigem.Rotulo}"/>
+                <DataGridTextColumn Header="Destino" Width="auto" Binding="{Binding verticeDestino.Rotulo}"/>
+                <DataGridTextColumn Header="Distancia" Width="auto" Binding="{Binding Pesos.Distancia}"/>
+                <DataGridTextColumn Header="Duração em minutos" Width="auto" Binding="{Binding Pesos.DuracaoDoVoo}"/>
+            </DataGrid.Columns>
+        </DataGrid>
 
     </Grid>
 </Window>
