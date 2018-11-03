@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +14,7 @@ namespace Trabalho_Grafos
         public Peso Pesos { get; set; }
         public int ID { get; set; }
         public List<Horario> ListaDeVoos { get; set; }
+        public List<Horario> PrevisaoChegada { get; set; }
 
         public Aresta(Vertice verticeOrigem, Vertice verticeConectado, int Direcao, Peso Pesos)
         {
@@ -30,6 +31,12 @@ namespace Trabalho_Grafos
             this.Direcao = Direcao;
             this.Pesos = Pesos;
             this.ListaDeVoos = ListaDeVoos;
+
+            foreach (Horario item in ListaDeVoos)
+            {
+                Horario horario = item;
+                horario.Minuto += Pesos.DuracaoDoVoo;
+            }
         }
     }
 }
