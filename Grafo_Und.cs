@@ -330,5 +330,59 @@ namespace Trabalho_Grafos
                 TravessiaEmAplitude(distancia, tempo, novoIndice, fila);
             }
         }
+
+        public string ComponentesConexos()
+        {
+            ResetarCores();
+            string val = "";
+            return ComponentesConexos(0, val, 0, 1, 1);
+        }
+
+        public string ComponentesConexos(int atual, string valor, int tempo, int distancia,int nConjuntos)
+        {
+            tempo++;
+            Vertices[atual].TempoDeDescoberta = tempo;
+            Vertices[atual].EstadoCor = 2;
+            valor += Vertices[atual].ID + ", ";
+            for (int v = 0; v < Vertices[atual].ListaDeAdjacencia.Count; v++)
+            {
+                int destino = Vertices[atual].ListaDeAdjacencia[v].verticeDestino.ID;
+
+                if (Vertices[destino].EstadoCor == 1)
+                {
+                    tempo++;
+                    Vertices[destino].Predecessor = Vertices[atual];
+                    Vertices[destino].Distancia = distancia;
+                    Vertices[destino].TempoDeDescoberta = tempo;
+                   return ComponentesConexos(destino, valor, tempo, distancia+1, nConjuntos);
+                }
+            }
+
+            tempo++;
+            Vertices[atual].EstadoCor = 3;
+
+
+            if (Vertices[atual].Predecessor == null)
+            {
+                int novoIndice = ExisteVerticesEmBranco();
+
+                if (novoIndice != -1)
+                {
+                    nConjuntos++;
+                    valor += "\nConjunto " + nConjuntos + ": ";
+                    return ComponentesConexos(novoIndice, valor, tempo, distancia + 1, nConjuntos);
+                }
+
+                else
+                {
+                    return valor;
+                }
+            }
+
+            else
+            {
+               return ComponentesConexos(Vertices[atual].Predecessor.ID, valor, tempo, distancia + 1, nConjuntos);
+            }
+        }
     }
 }
