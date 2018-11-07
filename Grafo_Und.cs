@@ -8,7 +8,7 @@ namespace Trabalho_Grafos
 {
     class Grafo_Und : Grafo
     {
-        public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares, string [] vetorRotulos)
+        public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares, string[] vetorRotulos)
         {
             Vertices = new Vertice[numeroDeVertices];
 
@@ -180,7 +180,7 @@ namespace Trabalho_Grafos
                 }
             }
 
-            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray(),0);
+            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray(), 0);
             //dados processados e arestas já ordenadas
 
             //para cada aresta no vetor de aresta
@@ -334,54 +334,68 @@ namespace Trabalho_Grafos
         public string ComponentesConexos()
         {
             ResetarCores();
-            string val = "";
-            return ComponentesConexos(0, val, 0, 1, 1);
+            string val = "Conjunto 1: ";
+            Queue<int> filaVertices = new Queue<int>();
+            List<int> listaConjunto = new List<int>();
+            Vertices[0].EstadoCor = 2;
+            val = ComponentesConexos(0, val, 1, filaVertices, listaConjunto);
+            return val;
         }
 
-        public string ComponentesConexos(int atual, string valor, int tempo, int distancia,int nConjuntos)
+        private string ComponentesConexos(int atual, string valor, int nConjuntos, Queue<int> idVertices, List<int> listaConjunto)
         {
-            tempo++;
-            Vertices[atual].TempoDeDescoberta = tempo;
-            Vertices[atual].EstadoCor = 2;
-            valor += Vertices[atual].ID + ", ";
-            for (int v = 0; v < Vertices[atual].ListaDeAdjacencia.Count; v++)
-            {
-                int destino = Vertices[atual].ListaDeAdjacencia[v].verticeDestino.ID;
+            valor += Vertices[atual].Rotulo + ", ";
+            listaConjunto.Add(atual);
 
-                if (Vertices[destino].EstadoCor == 1)
+            for (int w = 0; w < Vertices[atual].ListaDeAdjacencia.Count; w++)
+            {
+                int indiceVet = Vertices[atual].ListaDeAdjacencia[w].verticeDestino.ID;
+
+                if (Vertices[indiceVet].EstadoCor == 1)
                 {
-                    tempo++;
-                    Vertices[destino].Predecessor = Vertices[atual];
-                    Vertices[destino].Distancia = distancia;
-                    Vertices[destino].TempoDeDescoberta = tempo;
-                   return ComponentesConexos(destino, valor, tempo, distancia+1, nConjuntos);
+                    Vertices[indiceVet].EstadoCor = 2;
+                    idVertices.Enqueue(indiceVet);
                 }
             }
 
-            tempo++;
             Vertices[atual].EstadoCor = 3;
 
+            int novoIndice = 0;
 
-            if (Vertices[atual].Predecessor == null)
+            if (idVertices.Count > 0)
             {
-                int novoIndice = ExisteVerticesEmBranco();
-
-                if (novoIndice != -1)
-                {
-                    nConjuntos++;
-                    valor += "\nConjunto " + nConjuntos + ": ";
-                    return ComponentesConexos(novoIndice, valor, tempo, distancia + 1, nConjuntos);
-                }
-
-                else
-                {
-                    return valor;
-                }
+                novoIndice = idVertices.Dequeue();
+                return ComponentesConexos(novoIndice, valor, nConjuntos, idVertices, listaConjunto);
             }
 
             else
             {
-               return ComponentesConexos(Vertices[atual].Predecessor.ID, valor, tempo, distancia + 1, nConjuntos);
+                novoIndice = ExisteVerticesEmBranco();
+
+                if (novoIndice != -1)
+                {
+                    valor += "\nAeroportos necessários para manter conectividade do conjunto " + nConjuntos + ": ";
+                    for(int q = 0; q < listaConjunto.Count; q++)
+                    {
+                        if (isPendente(Vertices[listaConjunto[q]]))
+                            valor += Vertices[listaConjunto[q]].Rotulo + ", ";
+                    }
+                    nConjuntos++;
+                    listaConjunto = new List<int>();
+                    valor += "\n\nConjunto " + nConjuntos + ": ";
+                    return ComponentesConexos(novoIndice, valor, nConjuntos, idVertices, listaConjunto);
+                }
+
+                else
+                {
+                    valor += "\nAeroportos necessários para manter conectividade do conjunto " + nConjuntos + ": ";
+                    for(int q = 0; q < listaConjunto.Count; q++)
+                    {
+                        if (isPendente(Vertices[listaConjunto[q]]))
+                            valor += Vertices[listaConjunto[q]].Rotulo + ", ";
+                    }
+                    return valor;
+                }
             }
         }
     }
