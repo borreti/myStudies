@@ -33,21 +33,20 @@ namespace Trabalho_Grafos
 
         private void box_grafo_selecionado_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            int index = int.Parse(box_grafo_selecionado.SelectedItem.ToString());
-            index--;
+            indiceAcesso = int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1;
             grid_lista_adjacencia.Items.Clear();
-            PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[index]);
-            PreencherComboBox(box_aeroporto_destino, ListaGrafosDirigidos[index]);
+            PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[indiceAcesso]);
+            PreencherComboBox(box_aeroporto_destino, ListaGrafosDirigidos[indiceAcesso]);
             box_grafo_selecionado.SelectedIndex = box_grafo_selecionado.Items.Count - 1;
             box_aeroporto_origem.SelectedIndex = 0;
             box_aeroporto_destino.SelectedIndex = box_aeroporto_destino.Items.Count - 1;
 
-            for (int ps = 0; ps < ListaGrafosDirigidos[index].Vertices.Length; ps++)
+            for (int ps = 0; ps < ListaGrafosDirigidos[indiceAcesso].Vertices.Length; ps++)
             {
-                for (int fs = 0; fs < ListaGrafosDirigidos[index].Vertices[ps].ListaDeAdjacencia.Count; fs++)
+                for (int fs = 0; fs < ListaGrafosDirigidos[indiceAcesso].Vertices[ps].ListaDeAdjacencia.Count; fs++)
                 {
-                    if (ListaGrafosDirigidos[index].Vertices[ps].ListaDeAdjacencia[fs].Direcao == 1)
-                    grid_lista_adjacencia.Items.Add(ListaGrafosDirigidos[index].Vertices[ps].ListaDeAdjacencia[fs]);
+                    if (ListaGrafosDirigidos[indiceAcesso].Vertices[ps].ListaDeAdjacencia[fs].Direcao == 1)
+                    grid_lista_adjacencia.Items.Add(ListaGrafosDirigidos[indiceAcesso].Vertices[ps].ListaDeAdjacencia[fs]);
                 }
             }
         }
@@ -205,7 +204,6 @@ namespace Trabalho_Grafos
             try
             {
                 int tipoPeso = 0;
-                indiceAcesso = int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1;
                 int origem, destino;
                 string aeOrigem, aeDestino;
 
@@ -298,6 +296,12 @@ namespace Trabalho_Grafos
             mensagem += "\n\nSerão necessárias " + nArestas + " aeronaves para realizar os serviços de entrega entre os aeroportos";
 
             MessageBox.Show(mensagem, "Lista de adjacência com as rotas de custo minímo", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void btn_conectividade_Click(object sender, RoutedEventArgs e)
+        {
+           string message= ListaGrafosNaoDirigido[indiceAcesso].ComponentesConexos();
+            MessageBox.Show(message);
         }
     }
 }
