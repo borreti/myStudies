@@ -37,9 +37,11 @@ namespace Trabalho_Grafos
             grid_lista_adjacencia.Items.Clear();
             PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[indiceAcesso]);
             PreencherComboBox(box_aeroporto_destino, ListaGrafosDirigidos[indiceAcesso]);
-            box_grafo_selecionado.SelectedIndex = box_grafo_selecionado.Items.Count - 1;
+            PreencherComboBox(box_aeroporto_origem_ultimo_voo, ListaGrafosDirigidos[indiceAcesso]);
+
             box_aeroporto_origem.SelectedIndex = 0;
             box_aeroporto_destino.SelectedIndex = box_aeroporto_destino.Items.Count - 1;
+            box_aeroporto_origem_ultimo_voo.SelectedIndex = 0;
 
             for (int ps = 0; ps < ListaGrafosDirigidos[indiceAcesso].Vertices.Length; ps++)
             {
@@ -262,7 +264,7 @@ namespace Trabalho_Grafos
 
                     int tam = caminho.Length;
                     caminho = caminho.Substring(0, caminho.Length - 1);
-                    caminho += "\nPeso total: " + listaCaminho.Count;
+                    caminho += "\nPeso total: " + (listaCaminho.Count - 1);
                 }
 
                 else if (tipoPeso == 3)
@@ -271,7 +273,11 @@ namespace Trabalho_Grafos
                     caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso);
                 }
 
-                MessageBox.Show(caminho, "Rota disponível", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (caminho != null)
+                    MessageBox.Show(caminho, "Rota disponível", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                else
+                    MessageBox.Show("O grafo apresentado não é conexo");
             }
 
             catch (NullReferenceException ex)
@@ -282,26 +288,71 @@ namespace Trabalho_Grafos
 
         private void btn_arvore_minima_Click(object sender, RoutedEventArgs e)
         {
-            Grafo_Und gd = ListaGrafosNaoDirigido[indiceAcesso].Kruskal();
+            try
+            {
+                Grafo_Und gd = ListaGrafosNaoDirigido[indiceAcesso].Kruskal();
 
-            string mensagem = gd.ListaDeAdjacencia();
+                string mensagem = gd.ListaDeAdjacencia();
 
-            int nArestas = 0;
+                int nArestas = 0;
 
-            for (int l = 0; l < gd.Vertices.Length; l++)
-                nArestas += gd.Vertices[l].ListaDeAdjacencia.Count;
+                for (int l = 0; l < gd.Vertices.Length; l++)
+                    nArestas += gd.Vertices[l].ListaDeAdjacencia.Count;
 
-            nArestas /= 2;
+                nArestas /= 2;
 
-            mensagem += "\n\nSerão necessárias " + nArestas + " aeronaves para realizar os serviços de entrega entre os aeroportos";
+                mensagem += "\n\nSerão necessárias " + nArestas + " aeronaves para realizar os serviços de entrega entre os aeroportos";
 
-            MessageBox.Show(mensagem, "Lista de adjacência com as rotas de custo minímo", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(mensagem, "Lista de adjacência com as rotas de custo minímo", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            catch (NullReferenceException ex)
+            {
+                MessageBox.Show("O grafo não é conexo.", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            catch(ArgumentOutOfRangeException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void btn_conectividade_Click(object sender, RoutedEventArgs e)
         {
-           string message= ListaGrafosNaoDirigido[indiceAcesso].ComponentesConexos();
-            MessageBox.Show(message);
+            try
+            {
+                string message = ListaGrafosNaoDirigido[indiceAcesso].ComponentesConexos();
+                MessageBox.Show(message,"Conectividade", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            catch(IndexOutOfRangeException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            catch(ArgumentOutOfRangeException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void btn_ultimo_horario_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Horario agora = new Horario(DateTime.Now.Hour, DateTime.Now.Minute);
+
+                MessageBox.Show(agora.RetornarHora());
+
+                agora.Minuto += 60;
+
+                MessageBox.Show(agora.RetornarHora());
+            }
+
+            catch(FormatException)
+            {
+
+            }
         }
     }
 }
