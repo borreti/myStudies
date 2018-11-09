@@ -12,8 +12,17 @@ namespace Trabalho_Grafos
         {
             Vertices = new Vertice[numeroDeVertices];
 
+            int control = 1;
+
             for (int i = 0; i < Vertices.Length; i++)
+            {
+                if (vetorRotulos[i] == null)
+                {
+                    vetorRotulos[i] = "SEM RÓTULO " + control;
+                    control++;
+                }
                 Vertices[i] = new Vertice(i, vetorRotulos[i]);
+            }
 
 
             foreach (ParOrdenado parOrdenado in listaDePares)
@@ -73,7 +82,13 @@ namespace Trabalho_Grafos
 
         public override bool isAdjacente(Vertice v1, Vertice v2)
         {
-            throw new NotImplementedException();
+            for (int k = 0; k < Vertices[v1.ID].ListaDeAdjacencia.Count; k++)
+            {
+                if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeDestino.ID == v2.ID && Vertices[v1.ID].ListaDeAdjacencia[k].Direcao == 1)
+                    return true;
+            }
+
+            return false;
         }
 
         public override Grafo getComplementar()
@@ -148,9 +163,6 @@ namespace Trabalho_Grafos
                     OrdenacaoTopologica(vetVertices, indice, tempo, pilhaVertices); //chamada do método de ordenação com o indice do vertice em branco
             }
         }
-
-        //Verifica se existem vertices em branco, e se existe, retorna o indice para acesso
-        //Se não existem vertices em branco, retorna -1
 
         public override bool isEuleriano()
         {
@@ -298,6 +310,7 @@ namespace Trabalho_Grafos
             {
                 int indexDestino = Vertices[atual].ListaDeAdjacencia[f].verticeDestino.ID;
 
+                //se o vertice ainda não tiver sido fechado
                 if (Vertices[indexDestino].EstadoCor == 1 && Vertices[atual].ListaDeAdjacencia[f].Direcao == 1)
                 {
                     int dist = 0;
@@ -359,28 +372,9 @@ namespace Trabalho_Grafos
             }
         }
 
-        public void Teste(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso, Horario horarioAtual)
+        public void BuscarUltimoHorario(Horario horarioChegada, int destino, int origem)
         {
-            //para cada item da lista de adjacencia que tenha direção 1
-            for (int g = 0; g < Vertices[atual].ListaDeAdjacencia.Count; g++)
-            {
-                int destino = Vertices[atual].ListaDeAdjacencia[g].verticeDestino.ID;
-
-                int dist = vetorDistancias[atual];
-
-                if (Vertices[destino].EstadoCor == 1 && Vertices[atual].ListaDeAdjacencia[g].Direcao == 1)
-                {
-                    //soma a distancia dessa aresta com a distancia já existente
-                    dist += Vertices[atual].ListaDeAdjacencia[g].Pesos.Distancia;
-
-                    //se a distancia calculada atualmente for menor, 
-                    if (dist < vetorDistancias[destino])
-                    {
-                        vetorDistancias[g] = dist;
-                        vetorPredecessor[g] = atual;
-                    }
-                }
-            }
+          
         }
     }
 }
