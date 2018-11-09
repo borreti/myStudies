@@ -12,9 +12,17 @@ namespace Trabalho_Grafos
         {
             Vertices = new Vertice[numeroDeVertices];
 
-            for (int i = 0; i < Vertices.Length; i++)
-                Vertices[i] = new Vertice(i, vetorRotulos[i]);
+            int control = 1;
 
+            for (int i = 0; i < Vertices.Length; i++)
+            {
+                if (vetorRotulos[i] == null)
+                {
+                    vetorRotulos[i] = "SEM RÓTULO " + control;
+                    control++;
+                }
+                Vertices[i] = new Vertice(i, vetorRotulos[i]);
+            }
 
             foreach (ParOrdenado parOrdenado in listaDePares)
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Pesos, parOrdenado.ListaDeHorarios);
@@ -374,7 +382,7 @@ namespace Trabalho_Grafos
 
                 if (novoIndice != -1)
                 {
-                    valor += "\nAeroportos necessários para manter conectividade do conjunto " + nConjuntos + ": ";
+                    valor += "\nAeroportos que separadamente, se removidos, interrompem a conectividade do conjunto " + nConjuntos + ": ";
                     for(int q = 0; q < listaConjunto.Count; q++)
                     {
                         if (isPendente(Vertices[listaConjunto[q]]))
@@ -388,12 +396,20 @@ namespace Trabalho_Grafos
 
                 else
                 {
-                    valor += "\nAeroportos necessários para manter conectividade do conjunto " + nConjuntos + ": ";
+                    string auxVal = "";
+                    valor += "\nAeroportos que separadamente, se removidos, interrompem a conectividade do conjunto " + nConjuntos + ": ";
                     for(int q = 0; q < listaConjunto.Count; q++)
                     {
                         if (isPendente(Vertices[listaConjunto[q]]))
-                            valor += Vertices[listaConjunto[q]].Rotulo + ", ";
+                           auxVal += Vertices[listaConjunto[q]].Rotulo + ", ";
                     }
+
+                    if (auxVal == "")
+                        valor += "Não há aeroportos que separadamente, se removidos, interrompem a conectividade";
+
+                    else
+                        valor += auxVal;
+
                     return valor;
                 }
             }
