@@ -192,6 +192,7 @@ namespace Trabalho_Grafos
              *nPeso = 1 --> Dijkstra por tempo total de voo
              *nPeso = 2 --> Travessia em amplitude buscando o menor número de conexões
             */
+
             ResetarCores();
 
             int tamVet = Vertices.Length;
@@ -219,7 +220,7 @@ namespace Trabalho_Grafos
 
             int proxId = idDestino;
 
-            while (proxId != idOrigem)
+            while (proxId != idOrigem && proxId!= -1)
             {
                 pilhaIndices.Push(vetorPredecessor[proxId]);
                 proxId = vetorPredecessor[proxId];
