@@ -116,15 +116,15 @@ namespace Trabalho_Grafos
                         y = aux;
                     }
 
-                    List<Horario> ListaHorarios = new List<Horario>();
+                    List<DateTime> ListaHorarios = new List<DateTime>();
 
                     for (int r = 5; r < vetSplit.Length; r++)
                     {
                         string [] novoVet = vetSplit[r].Split(':');
                         int hora = int.Parse(novoVet[0]);
                         int minuto = int.Parse(novoVet[1]);
-                        Horario hr = new Horario(hora, minuto);
-                        ListaHorarios.Add(hr);
+                        DateTime dateTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, hora, minuto, 0);
+                        ListaHorarios.Add(dateTime);
                     }
 
 
@@ -162,6 +162,11 @@ namespace Trabalho_Grafos
             catch(FormatException ex)
             {
                 MessageBox.Show("Arquivo com formatação incorreta", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            catch (IndexOutOfRangeException ex)
+            {
+                MessageBox.Show("Arquivo com falha nas linhas", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -234,7 +239,7 @@ namespace Trabalho_Grafos
                 {
                     vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
                     //tratado na classe grafo
-                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso);
+                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso).mensagemFinal;
                 }
 
                 //tratato no próprio evento
@@ -270,7 +275,7 @@ namespace Trabalho_Grafos
                 else if (tipoPeso == 3)
                 {
                     vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
-                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso);
+                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso).mensagemFinal;
                 }
 
                 if (caminho != null)
@@ -281,6 +286,11 @@ namespace Trabalho_Grafos
             }
 
             catch (NullReferenceException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            catch(IndexOutOfRangeException ex)
             {
                 MessageBox.Show(ex.Message);
             }
@@ -340,13 +350,7 @@ namespace Trabalho_Grafos
         {
             try
             {
-                Horario agora = new Horario(DateTime.Now.Hour, DateTime.Now.Minute);
 
-                MessageBox.Show(agora.RetornarHora());
-
-                agora.Minuto += 60;
-
-                MessageBox.Show(agora.RetornarHora());
             }
 
             catch(FormatException)
