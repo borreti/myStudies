@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +13,7 @@ namespace Trabalho_Grafos
         public int X { get; set; }
         public int Y { get; set; }
         public Peso Pesos { get; set; }
-        public List<Horario> ListaDeHorarios;
+        public List<DateTime> ListaDeHorarios;
 
         public ParOrdenado(int X, int Y)
         {
@@ -28,7 +28,7 @@ namespace Trabalho_Grafos
             this.Y = Y;
         }
 
-        public ParOrdenado(int X, int Y, Peso Pesos, List<Horario> ListaDeHorarios)
+        public ParOrdenado(int X, int Y, Peso Pesos, List<DateTime> ListaDeHorarios)
         {
             this.Pesos = Pesos;
             this.X = X;
