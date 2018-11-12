@@ -266,7 +266,7 @@ namespace Trabalho_Grafos
             }
         }
 
-        protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso, Horario horarioAtual)
+        protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso)
         {
             int idMenor = -1;
 
@@ -293,9 +293,43 @@ namespace Trabalho_Grafos
 
                     else if (nPeso == 3)
                     {
-                        int tempoEmEspera = Horario.CalcularTempoEmEspera(Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos, horarioAtual);
-                        dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + vetorDistancias[atual] + tempoEmEspera;
-                        horarioAtual.Minuto += tempoEmEspera;
+                        int pred = vetorPredecessor[atual];
+                        int tempoEmEsperaM = 0;
+                        TimeSpan tempoEmEspera;
+
+                        if (pred != -1)
+                        {
+                            Aresta voo = BuscarAresta(pred, atual);
+                            DateTime horaAtual = voo.ListaDeVoos[0];
+                            horaAtual.AddMinutes(voo.Pesos.DuracaoDoVoo);
+
+                            int indiceHorario = -1;
+                            DateTime horarioEscolhido = Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[0];
+
+                            //for que procura um horário igual ou maior que o horário atual
+                            for (int x = 0; x < Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos.Count; x++)
+                            {
+                                if (Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[x] >= horaAtual && Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[x] < horarioEscolhido)
+                                {
+                                    horarioEscolhido = Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[x];
+                                    indiceHorario = x;
+                                }
+                            }
+
+                            if (indiceHorario != -1)
+                            {
+                                tempoEmEspera = Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[indiceHorario] - horaAtual;
+                            }
+
+                            else
+                            {
+                                horaAtual = horaAtual.AddDays(1);
+                                tempoEmEspera = horaAtual - Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[0];
+                            }
+
+                            tempoEmEsperaM = (tempoEmEspera.Hours * 60) + tempoEmEspera.Minutes;
+                            dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + vetorDistancias[atual] + tempoEmEsperaM;
+                        }
                     }
 
                     if (dist < vetorDistancias[indexDestino])
@@ -309,7 +343,18 @@ namespace Trabalho_Grafos
             idMenor = BuscarVerticeAberto(vetorDistancias);
 
             if (idMenor != -1)
-                Dijkstra(vetorDistancias, vetorPredecessor, idMenor, nPeso, horarioAtual);
+                Dijkstra(vetorDistancias, vetorPredecessor, idMenor, nPeso);
+        }
+
+        public Aresta BuscarAresta(int v1, int v2)
+        {
+            for (int w = 0; w < Vertices[v1].ListaDeAdjacencia.Count; w++)
+            {
+                if (Vertices[v1].ListaDeAdjacencia[w].verticeDestino == Vertices[v2])
+                    return Vertices[v1].ListaDeAdjacencia[w];
+            }
+
+            return null;
         }
 
         protected override void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
