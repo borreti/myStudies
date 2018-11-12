@@ -10,7 +10,7 @@ namespace Trabalho_Grafos
     {
         public Vertice[] Vertices;
 
-        protected void FormarNovaAresta(int idV1, int idV2, Peso pesos, List<Horario> listaVoos)
+        protected void FormarNovaAresta(int idV1, int idV2, Peso pesos, List<DateTime> listaVoos)
         {
             Aresta i1 = new Aresta(this.Vertices[idV2], this.Vertices[idV1], -1, pesos, listaVoos);
             Aresta i2 = new Aresta(this.Vertices[idV1], this.Vertices[idV2], 1, pesos, listaVoos);
@@ -27,7 +27,7 @@ namespace Trabalho_Grafos
         }
 
 
-        protected abstract void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso, Horario horarioAtual);
+        protected abstract void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso);
 
         public abstract int getGrau(Vertice v1);
 
@@ -115,6 +115,12 @@ namespace Trabalho_Grafos
                 Vertices[c].EstadoCor = 1;
         }
 
+        public void ResetarPredecessores()
+        {
+            for (int c = 0; c < Vertices.Length; c++)
+                Vertices[c].Predecessor = null;
+        }
+
         //ordena arestas por peso
         protected Aresta[] insertionSort(Aresta[] vetor, int nPeso)
         {
@@ -186,11 +192,11 @@ namespace Trabalho_Grafos
         }
 
         //retorna uma string com os aeroportos na ordem e a informação do peso total
-        public string Dijkstra(int idOrigem, int idDestino, int nPeso)
+        public PackDijkstra Dijkstra(int idOrigem, int idDestino, int nPeso)
         {
             /*nPeso = 0 --> Dijkstra por distancia
              *nPeso = 1 --> Dijkstra por tempo total de voo
-             *nPeso = 2 --> Travessia em amplitude buscando o menor número de conexões
+             *nPeso = 3 --> Dijkstra por tempo total da viagem
             */
 
             ResetarCores();
@@ -210,9 +216,10 @@ namespace Trabalho_Grafos
                     vetorPredecessor[q] = -1;
                 }
             }
-            Horario now = new Horario(DateTime.Now.Hour, DateTime.Now.Minute);
 
-            Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, nPeso, now);
+            Vertices[idOrigem].HorarioAtual = DateTime.Now;
+
+            Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, nPeso);
 
             Stack<int> pilhaIndices = new Stack<int>();
 
@@ -243,7 +250,9 @@ namespace Trabalho_Grafos
 
             ResetarCores();
 
-            return caminho;
+            PackDijkstra pack = new PackDijkstra(listaIds, caminho);
+
+            return pack;
         }
 
         public void TravessiaEmAplitude(int vInicial)
