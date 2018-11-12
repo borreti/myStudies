@@ -13,8 +13,8 @@ namespace Trabalho_Grafos
         public int Direcao { get; set; }
         public Peso Pesos { get; set; }
         public int ID { get; set; }
-        public List<Horario> ListaDeVoos { get; set; }
-        public List<Horario> PrevisaoChegada { get; set; }
+        public List<DateTime> ListaDeVoos { get; set; }
+        public List<DateTime> PrevisaoChegada { get; set; }
 
         public Aresta(Vertice verticeOrigem, Vertice verticeConectado, int Direcao, Peso Pesos)
         {
@@ -24,7 +24,7 @@ namespace Trabalho_Grafos
             this.Pesos = Pesos;
         }
 
-        public Aresta(Vertice verticeOrigem, Vertice verticeConectado, int Direcao, Peso Pesos, List<Horario> ListaDeVoos)
+        public Aresta(Vertice verticeOrigem, Vertice verticeConectado, int Direcao, Peso Pesos, List<DateTime> ListaDeVoos)
         {
             this.verticeOrigem = verticeOrigem;
             this.verticeDestino = verticeConectado;
@@ -32,10 +32,14 @@ namespace Trabalho_Grafos
             this.Pesos = Pesos;
             this.ListaDeVoos = ListaDeVoos;
 
-            foreach (Horario item in ListaDeVoos)
+            this.ListaDeVoos.Sort();
+
+            this.PrevisaoChegada = new List<DateTime>();
+
+            for (int e = 0; e < ListaDeVoos.Count; e++)
             {
-                Horario horario = item;
-                horario.Minuto += Pesos.DuracaoDoVoo;
+                PrevisaoChegada.Add(this.ListaDeVoos[e]);
+                PrevisaoChegada[e] = PrevisaoChegada[e].AddMinutes(Pesos.DuracaoDoVoo);
             }
         }
     }
