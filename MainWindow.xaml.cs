@@ -38,10 +38,12 @@ namespace Trabalho_Grafos
             PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[indiceAcesso]);
             PreencherComboBox(box_aeroporto_destino, ListaGrafosDirigidos[indiceAcesso]);
             PreencherComboBox(box_aeroporto_origem_ultimo_voo, ListaGrafosDirigidos[indiceAcesso]);
+            PreencherComboBox(box_aeroporto_destino_ultimo_voo, ListaGrafosDirigidos[indiceAcesso]);
 
             box_aeroporto_origem.SelectedIndex = 0;
             box_aeroporto_destino.SelectedIndex = box_aeroporto_destino.Items.Count - 1;
             box_aeroporto_origem_ultimo_voo.SelectedIndex = 0;
+            box_aeroporto_destino_ultimo_voo.SelectedIndex = box_aeroporto_destino_ultimo_voo.Items.Count - 1;
 
             for (int ps = 0; ps < ListaGrafosDirigidos[indiceAcesso].Vertices.Length; ps++)
             {
@@ -350,12 +352,35 @@ namespace Trabalho_Grafos
         {
             try
             {
+                DateTime dt;
+                string val = text_horario.Text;
 
+                string[] vetSplit = val.Split(':');
+
+                int hora = int.Parse(vetSplit[0]);
+                int minuto = int.Parse(vetSplit[1]);
+
+                string origemSt = box_aeroporto_origem_ultimo_voo.SelectedItem.ToString();
+                string destinoSt = box_aeroporto_destino_ultimo_voo.SelectedItem.ToString();
+
+                int origem = BuscarIndiceRotulo(ListaGrafosDirigidos[indiceAcesso].Vertices, origemSt);
+                int destino = BuscarIndiceRotulo(ListaGrafosDirigidos[indiceAcesso].Vertices, destinoSt);
+
+                dt = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, hora, minuto, 0);
+
+               string message = ListaGrafosDirigidos[indiceAcesso].BuscarUltimoHorario(dt,origem, destino);
+
+                MessageBox.Show(message);
             }
 
-            catch(FormatException)
+            catch(FormatException ex)
             {
+                MessageBox.Show("Horário em formato inválido", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
 
+            catch(NullReferenceException ex)
+            {
+                MessageBox.Show("Não há aeroportos selecionados", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
