@@ -1,4 +1,4 @@
-vusing System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -433,29 +433,78 @@ namespace Trabalho_Grafos
             }
         }
 
-        public void BuscarUltimoHorario(DateTime horarioLimite, int origem, int destino)
+        public string BuscarUltimoHorario(DateTime horarioLimite, int origem, int destino)
         {
             List<int> caminho = Dijkstra(origem, destino, 3).ListaCaminho;
+
+            Queue<int> FilaId = new Queue<int>();
+
+            for (int s = caminho.Count - 1; s >= 0; s--)
+                FilaId.Enqueue(caminho[s]);
+
+            Stack<string> resultadoString = new Stack<string>();
+            string res = "";
+
+            BuscarUltimoHorario(caminho[caminho.Count - 2], caminho[0], caminho[caminho.Count - 1], horarioLimite, resultadoString, FilaId);
+
+            if (resultadoString.Count > 0)
+            {
+
+                foreach (string st in resultadoString)
+                    res += st;
+            }
+
+            else
+            {
+                res = "Não há nenhum voo que cumpre os requisitos.";
+            }
+
+            return res;
         }
 
-        private void BuscarUltimoHorario(int origem, int destino, int final, DateTime horarioLimite, string resultado)
+        private void BuscarUltimoHorario(int atual, int origem, int destino, DateTime horarioLimite, Stack<string> resultado, Queue<int> fila)
         {
+            fila.Dequeue();
+
             int indiceVoo = -1;
-            for (int k = 0; k < Vertices[origem].ListaDeAdjacencia.Count; k++)
+            DateTime horario;
+            DateTime novoHor = DateTime.Now;
+
+            for (int k = 0; k < Vertices[atual].ListaDeAdjacencia.Count; k++)
             {
-                DateTime horario = Vertices[origem].ListaDeAdjacencia[k].ListaDeVoos[0];
-                if (Vertices[origem].ListaDeAdjacencia[k].Direcao == -1 && Vertices[origem].ListaDeAdjacencia[k].verticeDestino.ID == destino)
+                horario = Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[0];
+                if (Vertices[atual].ListaDeAdjacencia[k].Direcao == 1 && Vertices[atual].ListaDeAdjacencia[k].verticeDestino.ID == destino)
                 {
-                    for (int q = 0; q < Vertices[origem].ListaDeAdjacencia[k].PrevisaoChegada.Count; q++)
+                    for (int q = 0; q < Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada.Count; q++)
                     {
-                        if (Vertices[origem].ListaDeAdjacencia[k].PrevisaoChegada[q] <= horarioLimite && Vertices[origem].ListaDeAdjacencia[k].PrevisaoChegada[q] >= horario)
+                        if (Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada[q] <= horarioLimite && Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada[q] >= horario)
                         {
                             indiceVoo = q;
-                            horario = Vertices[origem].ListaDeAdjacencia[k].PrevisaoChegada[q];
+                            horario = Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada[q];
+                            novoHor = Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[q];
                         }
                     }
+
+                    string r = Vertices[atual].Rotulo + " para " + Vertices[destino].Rotulo + " ";
+
+                    if (indiceVoo == -1)
+                    {
+                        for (int tam = resultado.Count; tam > 0; tam--)
+                            resultado.Pop();
+
+                        return;                       
+                    }
+
+                    r += Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[indiceVoo] + "\n";
+
+                    resultado.Push(r);
+
+                    break;
                 }
             }
+
+            if (fila.Count > 1)
+                BuscarUltimoHorario(fila.ElementAt(fila.Count - 1), origem, fila.ElementAt(fila.Count - 2), novoHor, resultado, fila);
         }
     }
 }
