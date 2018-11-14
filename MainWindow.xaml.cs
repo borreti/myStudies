@@ -382,6 +382,11 @@ namespace Trabalho_Grafos
             {
                 MessageBox.Show("Não há aeroportos selecionados", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+            catch(ArgumentOutOfRangeException ex)
+            {
+                MessageBox.Show("Parametros de origem e destino são inválidos",ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
