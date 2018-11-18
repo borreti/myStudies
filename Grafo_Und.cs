@@ -8,6 +8,7 @@ namespace Trabalho_Grafos
 {
     class Grafo_Und : Grafo
     {
+        //construtor com rotulos
         public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares, string[] vetorRotulos)
         {
             Vertices = new Vertice[numeroDeVertices];
@@ -28,6 +29,7 @@ namespace Trabalho_Grafos
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Pesos, parOrdenado.ListaDeHorarios);
         }
 
+        //construtor sem rotulos
         public Grafo_Und(int numeroDeVertices, List<ParOrdenado> listaDePares)
         {
             Vertices = new Vertice[numeroDeVertices];
@@ -40,10 +42,13 @@ namespace Trabalho_Grafos
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Pesos, parOrdenado.ListaDeHorarios);
         }
 
+
         public override bool isAdjacente(Vertice v1, Vertice v2)
         {
+            //para toda aresta do vertice v1
             for (int k = 0; k < Vertices[v1.ID].ListaDeAdjacencia.Count; k++)
             {
+                //verifica se algum dos itens adjacentes é igual ao v2
                 if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeDestino.ID == v2.ID)
                     return true;
             }
@@ -93,6 +98,8 @@ namespace Trabalho_Grafos
             Grafo_Und grafo;
             int nVertices;
             List<ParOrdenado> pares = new List<ParOrdenado>();
+
+
             for (int i = 0; i < Vertices.Length; i++)
             {
                 for (int j = 0; j < Vertices.Length; j++)
@@ -115,6 +122,7 @@ namespace Trabalho_Grafos
             return grafo = new Grafo_Und(nVertices, pares);
         }
 
+        //evita pares ordenados iguais, evitando duplicação de arestas
         private bool VerificarParExistente(int x, int y, List<ParOrdenado> lista)
         {
             for (int h = 0; h < lista.Count; h++)
@@ -139,6 +147,7 @@ namespace Trabalho_Grafos
 
             return true;
         }
+
 
         public override string ListaDeAdjacencia()
         {
@@ -400,45 +409,61 @@ namespace Trabalho_Grafos
             valor += Vertices[atual].Rotulo + ", ";
             listaConjunto.Add(atual);
 
+            //loop para visitar todos os vertices adjacentes
             for (int w = 0; w < Vertices[atual].ListaDeAdjacencia.Count; w++)
             {
+                //captura o id para localizar o vertice
                 int indiceVet = Vertices[atual].ListaDeAdjacencia[w].verticeDestino.ID;
 
+                //verifica se ainda não foi visitado
                 if (Vertices[indiceVet].EstadoCor == 1)
                 {
+                    //colore de azul
                     Vertices[indiceVet].EstadoCor = 2;
-                    idVertices.Enqueue(indiceVet);
+                    idVertices.Enqueue(indiceVet); //enfileira
                 }
             }
 
+            //apos o for, todos os adjacentes foram visitados
             Vertices[atual].EstadoCor = 3;
 
             int novoIndice = 0;
 
+            //se há itens na fila
             if (idVertices.Count > 0)
             {
+                //havendo itens na fila, é removido o primeiro item para fazer a chamada recursiva atualizando o indice do vertice que será acessado
                 novoIndice = idVertices.Dequeue();
                 return ComponentesConexos(novoIndice, valor, nConjuntos, idVertices, listaConjunto);
             }
 
+            //o bloco de codigo abaixo, ocorre quando o primeiro componente conexo chegou ao seu fim
             else
             {
+                //busca um vertice em branco
                 novoIndice = ExisteVerticesEmBranco();
 
+                //se o novoIndice for diferente de -1, é porque existe
                 if (novoIndice != -1)
                 {
+                    //agora verifica os componentes que se removidos, acabam com a conectivdade desse sub conjunto
                     valor += "\nAeroportos que separadamente, se removidos, interrompem a conectividade do conjunto " + nConjuntos + ": ";
+                    //para todos os itens do conjunto
                     for(int q = 0; q < listaConjunto.Count; q++)
                     {
-                        if (isPendente(Vertices[listaConjunto[q]]))
-                            valor += Vertices[listaConjunto[q]].Rotulo + ", ";
+                        if (isPendente(Vertices[listaConjunto[q]])) //verifica aqueles que possuem grau 1
+                            valor += Vertices[listaConjunto[q]].Rotulo + ", "; //todos que possuem grau 1, são incluidos na string
                     }
+
                     nConjuntos++;
-                    listaConjunto = new List<int>();
+                    listaConjunto = new List<int>(); //reseta a lista de conjuntos
                     valor += "\n\nConjunto " + nConjuntos + ": ";
                     return ComponentesConexos(novoIndice, valor, nConjuntos, idVertices, listaConjunto);
                 }
 
+                //novoIndice = -1, significa que não há vertices em branco para serem visitados
+                //realiza quase o mesmo codigo do primeiro if, com a diferença que não há chamada recursiva
+                //também não há preparação da string para a proxima chamada, e sim um acabamento final
                 else
                 {
                     string auxVal = "";
