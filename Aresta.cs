@@ -10,11 +10,12 @@ namespace Trabalho_Grafos
     {
         public Vertice verticeOrigem { get; set; }
         public Vertice verticeDestino { get; set; }
-        public int Direcao { get; set; }
-        public Peso Pesos { get; set; }
+        public int Direcao { get; set; }//se a direção for 1, o vertice parte da origem para o destino, se for -1, destino para a origem
+        public Peso Pesos { get; set; }//pesos de duração do voo e distancia
         public int ID { get; set; }
-        public List<DateTime> ListaDeVoos { get; set; }
-        public List<DateTime> PrevisaoChegada { get; set; }
+        public List<DateTime> ListaDeVoos { get; set; } //lista com todos os horarios de voo
+        public List<DateTime> PrevisaoChegada { get; set; } //lista com todas as previsões de chegada
+
 
         public Aresta(Vertice verticeOrigem, Vertice verticeConectado, int Direcao, Peso Pesos)
         {
@@ -32,10 +33,11 @@ namespace Trabalho_Grafos
             this.Pesos = Pesos;
             this.ListaDeVoos = ListaDeVoos;
 
-            this.ListaDeVoos.Sort();
+            this.ListaDeVoos.Sort(); //ordena os horários de voo
 
-            this.PrevisaoChegada = new List<DateTime>();
+            PrevisaoChegada = new List<DateTime>();
 
+            //for que gera a previsão de chegada, dando o horario inicial, mais o tempo de viagem em minutos
             for (int e = 0; e < ListaDeVoos.Count; e++)
             {
                 PrevisaoChegada.Add(this.ListaDeVoos[e]);
