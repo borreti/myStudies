@@ -8,6 +8,7 @@ namespace Trabalho_Grafos
 {
     class Grafo_Dir : Grafo
     {
+        //construtor com rotulos
         public Grafo_Dir(int numeroDeVertices, List<ParOrdenado> listaDePares, string[] vetorRotulos)
         {
             Vertices = new Vertice[numeroDeVertices];
@@ -29,6 +30,7 @@ namespace Trabalho_Grafos
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Pesos, parOrdenado.ListaDeHorarios);
         }
 
+        //construtor sem rotulos
         public Grafo_Dir(int numeroDeVertices, List<ParOrdenado> listaDePares)
         {
             Vertices = new Vertice[numeroDeVertices];
@@ -40,7 +42,6 @@ namespace Trabalho_Grafos
             foreach (ParOrdenado parOrdenado in listaDePares)
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Pesos, parOrdenado.ListaDeHorarios);
         }
-
 
         public int getGrauEntrada(Vertice v1)
         {
@@ -56,15 +57,20 @@ namespace Trabalho_Grafos
         {
             int grau = 0;
 
+            //entrada --> dir = -1
+            //saida --> dir = 1
+
+            //para todos as adjacencias do vertice
             for (int i = 0; i < Vertices[v1.ID].ListaDeAdjacencia.Count; i++)
             {
-                if (Vertices[v1.ID].ListaDeAdjacencia[i].Direcao == dir)
-                    grau++;
+                if (Vertices[v1.ID].ListaDeAdjacencia[i].Direcao == dir) //se o vertice possui um adjacente com a direção requisitada
+                    grau++;//o grau aumenta mais um
             }
 
             return grau;
         }
 
+        //pega o grau geral do vertice, considerando as entradas e saidas
         public override int getGrau(Vertice v1)
         {
             int grau = 0;
@@ -77,8 +83,11 @@ namespace Trabalho_Grafos
 
         public override bool isAdjacente(Vertice v1, Vertice v2)
         {
+            //para todos os itens adjacentes
             for (int k = 0; k < Vertices[v1.ID].ListaDeAdjacencia.Count; k++)
             {
+                //compara os ids para verificar se a aresta existe
+                //ignora direção, considera somente a adjacencia
                 if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeDestino.ID == v2.ID && Vertices[v1.ID].ListaDeAdjacencia[k].Direcao == 1)
                     return true;
             }
