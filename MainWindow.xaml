@@ -40,7 +40,7 @@
         <Label Content="Aeroporto de destino" HorizontalAlignment="Left" Margin="359,511,0,0" VerticalAlignment="Top"/>
         <Label Content="Ultimo voo possível para o horário selecionado" HorizontalAlignment="Left" Margin="191,457,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="text_horario" HorizontalAlignment="Left" Height="22" Margin="263,607,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <Button x:Name="btn_ultimo_horario" Content="Button" HorizontalAlignment="Left" Margin="263,675,0,0" VerticalAlignment="Top" Width="120" Click="btn_ultimo_horario_Click"/>
+        <Button x:Name="btn_ultimo_horario" Content="Obter" HorizontalAlignment="Left" Margin="263,675,0,0" VerticalAlignment="Top" Width="120" Click="btn_ultimo_horario_Click"/>
         <Label Content="Horário de chegada" HorizontalAlignment="Left" Margin="263,576,0,0" VerticalAlignment="Top"/>
 
     </Grid>
