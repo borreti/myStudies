@@ -41,11 +41,6 @@ namespace Trabalho_Grafos
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Pesos, parOrdenado.ListaDeHorarios);
         }
 
-        public Grafo_Dir()
-        {
-
-        }
-
 
         public int getGrauEntrada(Vertice v1)
         {
@@ -193,112 +188,6 @@ namespace Trabalho_Grafos
             return valor;
         }
 
-        public Grafo_Dir Kruskal()
-        {
-            //algoritmo só deve ser executado em grafos conexos
-            if (!isConexo()) //se o grafo não é conexo, o algoritmo não será executado e retornará null
-                return null;
-
-            //pré processamento dos dados
-            List<Aresta> listaArestas = new List<Aresta>();
-            List<ParOrdenado> pares = new List<ParOrdenado>();
-
-            Grafo_Dir grafoAuxilir = new Grafo_Dir(Vertices.Length, pares);
-
-            for (int a = 0; a < grafoAuxilir.Vertices.Length; a++)
-                grafoAuxilir.Vertices[a].Rotulo = this.Vertices[a].Rotulo;
-
-            for (int g = 0; g < Vertices.Length; g++)
-            {
-                for (int a = 0; a < Vertices[g].ListaDeAdjacencia.Count; a++)
-                {
-                    if (Vertices[g].ListaDeAdjacencia[a].Direcao == 1)
-                        listaArestas.Add(Vertices[g].ListaDeAdjacencia[a]);
-                }
-            }
-
-            Aresta[] arestasOrdenadas = insertionSort(listaArestas.ToArray(), 0);
-            //dados processados e arestas já ordenadas
-
-            //para cada aresta no vetor de aresta
-            for (int v = 0; v < arestasOrdenadas.Length; v++)
-            {
-                //capturar origem e destino da aresta, ignorando a direção, pois é um grafo não dirigido
-                int idOrigem = arestasOrdenadas[v].verticeOrigem.ID;
-                int idDestino = arestasOrdenadas[v].verticeDestino.ID;
-
-                //if para ignorar os loops do grafo original
-                if (idOrigem != idDestino)
-                {
-                    //fila auxiliar para executar a busca pelo ciclo
-                    Queue<int> fila = new Queue<int>();
-
-                    //verifica se a adição da nova aresta vai gerar um ciclo
-                    if (!VerificarCiclo(fila, idOrigem, idDestino, idDestino, grafoAuxilir))
-                        grafoAuxilir.FormarNovaAresta(idOrigem, idDestino, arestasOrdenadas[v].Pesos); //não formando ciclo, nova aresta é criada
-                }
-            }
-
-            return grafoAuxilir;
-        }
-
-        private bool VerificarCiclo(Queue<int> fila, int idOrigem, int idDestino, int idAtual, Grafo_Dir grafoAux)
-        {
-            //MÉTODO RECURSIVO BASEADO NA TRAVESSIA EM AMPLITUDE
-            grafoAux.Vertices[idAtual].EstadoCor = 2;
-
-            //para cada item da lista de adjacencia do vértice atual
-            for (int w = 0; w < grafoAux.Vertices[idAtual].ListaDeAdjacencia.Count; w++)
-            {
-                //se a direção é origem -> destino
-                if (grafoAux.Vertices[idAtual].ListaDeAdjacencia[w].Direcao == 1)
-                {
-                    //captura o indice do vertice destino
-                    int idLaco = grafoAux.Vertices[idAtual].ListaDeAdjacencia[w].verticeDestino.ID;
-
-                    //se o indice capturado for igual a origem, singnifica que esses componentes ja são conexos
-                    //a adição de uma nova aresta, formaria um ciclo, portanto, retorna verdadeiro
-                    if (idLaco == idOrigem)
-                    {
-                        //reseta as cores do grafo auxiliar, para não atrapalhar as próximas execuções do algoritmo
-                        grafoAux.ResetarCores();
-                        return true;
-                    }
-
-                    else
-                    {
-                        //verifica se o vertice já não foi visitado anteriormente
-                        if (grafoAux.Vertices[idLaco].EstadoCor == 1)
-                        {
-                            fila.Enqueue(idLaco); //enfileira o indice do vertice que está sendo visitado
-                            grafoAux.Vertices[idLaco].EstadoCor = 2; //pinta o vertice de azul
-                        }
-                    }
-                }
-            }
-
-            grafoAux.Vertices[idAtual].EstadoCor = 3; //pinta o vertice de vermelho
-
-            //condição para chamada recursiva
-            //se existem itens na fila, ainda há vertices para verificar a condição de ciclo
-            if (fila.Count > 0)
-            {
-                //remove da fila, detectando o próximo vertice a ser verificado
-                int prox = fila.Dequeue();
-
-                //chamada recursiva com parametros atualizados
-                return VerificarCiclo(fila, idOrigem, idDestino, prox, grafoAux);
-            }
-
-            //else que será executado quando todos os vértices já tiverem sido visitados
-            else
-            {
-                //reseta as cores do grafo auxiliar, para não atrapalhar as próximas execuções do algoritmo
-                grafoAux.ResetarCores();
-                return false;
-            }
-        }
-
         protected override void Dijkstra(int[] vetorDistancias, int[] vetorPredecessor, int atual, int nPeso)
         {
             int idMenor = -1;
@@ -315,32 +204,38 @@ namespace Trabalho_Grafos
                 {
                     int dist = 0;
 
+                    //dijkstra por distancia total
                     if (nPeso == 0)
                     {
                         dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.Distancia + vetorDistancias[atual];
                     }
 
+
+                    //dijkstra por duração total dos voos
                     else if (nPeso == 1)
                     {
                         dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + vetorDistancias[atual];
                     }
 
+                    //dijkstra por duração total da viagem
                     else if (nPeso == 3)
                     {
+                        //!----ALGORITMO QUE CALCULA O TEMPO EM ESPERA----!//
                         int pred = vetorPredecessor[atual];
                         int tempoEmEsperaM = 0;
                         TimeSpan tempoEmEspera;
 
+                        //se houver predecessor
                         if (pred != -1)
                         {
                             Aresta voo = BuscarAresta(pred, atual, 1);
-                            DateTime horaAtual = voo.ListaDeVoos[0];
-                            horaAtual = horaAtual.AddMinutes(voo.Pesos.DuracaoDoVoo);
+                            DateTime horaAtual = voo.PrevisaoChegada[0]; // a previsão de chegada mais curta define a hora atual
 
-                            int indiceHorario = -1;
+                            int indiceHorario = -1; //inicializa com -1 para controle
+
                             DateTime horarioEscolhido = Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[0];
 
-                            //for que procura um horário igual ou maior que o horário atual
+                            //for que procura um horário igual ou maior que o horário atual e menor ou igual ao horario que havia sido escolhido antes
                             for (int x = 0; x < Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos.Count; x++)
                             {
                                 if (Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[x] >= horaAtual && Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[x] <= horarioEscolhido)
@@ -350,38 +245,51 @@ namespace Trabalho_Grafos
                                 }
                             }
 
+                            //se a variavel tem valor -1, significa que não foi encontrado um horário que cumprisse as condições necessárias
                             if (indiceHorario != -1)
                             {
+                                //calculo dateTime
+                                //!---- Situação desejada, pois essa parte do código executa quando ainda há um voo disponível para aquele mesmo dia ----!
                                 tempoEmEspera = Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[indiceHorario] - horaAtual;
                             }
 
+                            //indiceHorario terminou como menos, então não há um voo disponivel para hoje
                             else
                             {
+                                //pega o voo mais cedo do próximo dia
                                 DateTime aux = Vertices[atual].ListaDeAdjacencia[f].ListaDeVoos[0], aux2;
+
+                                //cálculo para definir se o valor será negativo ou positivo
                                 int varCompar = ((aux.Hour * 60) + aux.Minute) - ((horaAtual.Hour * 60) + horaAtual.Minute);
 
+                                //se for negativo, adiciona um dia num novo auxiliar
                                 if (varCompar < 0)
                                 {
                                     aux2 = new DateTime(aux.Year, aux.Month, aux.Day + 1, aux.Hour, aux.Minute, aux.Second);
                                     tempoEmEspera = aux2 - horaAtual;
                                 }
 
+                                //se for positivo, subtrai a hora atual do primeiro auxiliar
                                 else
                                 {
                                     tempoEmEspera = horaAtual - aux;
                                 }
                             }
 
+                            //transforma a espera em minutos
                             tempoEmEsperaM = ((tempoEmEspera.Days * 24) * 60) + (tempoEmEspera.Hours * 60) + tempoEmEspera.Minutes;
                             dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + vetorDistancias[atual] + tempoEmEsperaM;
                         }
 
+                        //se não há predecessor
                         else
                         {
                             dist = Vertices[atual].ListaDeAdjacencia[f].Pesos.DuracaoDoVoo + vetorDistancias[atual];
                         }
                     }
 
+                    //verifica se a distancia encontrada é menor do que a que estava no vetor de distancias
+                    //se for, atualiza a distancia e o predecessor
                     if (dist < vetorDistancias[indexDestino])
                     {
                         vetorPredecessor[indexDestino] = atual;
@@ -390,6 +298,7 @@ namespace Trabalho_Grafos
                 }
             }
 
+                      //método auxiliar para encontrar o vértice aberto com a menor distancia
             idMenor = BuscarVerticeAberto(vetorDistancias);
 
             if (idMenor != -1)
@@ -409,51 +318,67 @@ namespace Trabalho_Grafos
 
         protected override void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
         {
+            //para todo vertice adjacente ao atual
             for (int w = 0; w < this.Vertices[atual].ListaDeAdjacencia.Count; w++)
             {
+                //captura o id do destino
                 int indiceAux = this.Vertices[atual].ListaDeAdjacencia[w].verticeDestino.ID;
 
+                //verifica se a direção é 1, e se o vertice ainda não foi visitado
                 if (this.Vertices[indiceAux].EstadoCor == 1 && this.Vertices[atual].ListaDeAdjacencia[w].Direcao == 1)
                 {
+                    //colore o vertice, muda o predecessor, e poe o tempo de descoberta
                     this.Vertices[indiceAux].EstadoCor = 2;
                     this.Vertices[indiceAux].Predecessor = Vertices[atual];
                     this.Vertices[indiceAux].TempoDeDescoberta = tempo;
                     tempo++;
+                    //enfileira o indice do vertice que foi visitado
                     fila.Enqueue(indiceAux);
                 }
             }
 
+            //finaliza o tempo do vertice atual
             this.Vertices[atual].TempoDeFinalizacao = tempo;
             tempo++;
 
+            //verifica se ainda há vertices na fila
             if (fila.Count > 0)
             {
+                //se houver, cria o novo indice
                 int novoIndice = fila.Dequeue();
+                //chamada recursiva
                 this.TravessiaEmAplitude(distancia, tempo, novoIndice, fila);
             }
         }
 
         public string BuscarUltimoHorario(DateTime horarioLimite, int origem, int destino)
         {
+            //busca a menor rota
             List<int> caminho = Dijkstra(origem, destino, 3).ListaCaminho;
 
             Queue<int> FilaId = new Queue<int>();
 
+            //enfileira o caminho
             for (int s = caminho.Count - 1; s >= 0; s--)
                 FilaId.Enqueue(caminho[s]);
 
+            //o resultado do caminho é uma pilha
+            //o algoritmo começa no destino e vai voltando até a origem, efetuando todos os cálculos necessários
             Stack<string> resultadoString = new Stack<string>();
             string res = "";
 
             BuscarUltimoHorario(caminho[caminho.Count - 2], caminho[0], caminho[caminho.Count - 1], horarioLimite, resultadoString, FilaId);
 
+            //se houver itens stackados
             if (resultadoString.Count > 0)
             {
-
+                //monta a string de resposta
                 foreach (string st in resultadoString)
                     res += st;
             }
 
+            //não há itens stackados
+            //ocorre quando não há uma rota possível para o destino
             else
             {
                 res = "Não há nenhum voo que cumpre os requisitos.";
@@ -464,41 +389,52 @@ namespace Trabalho_Grafos
 
         private void BuscarUltimoHorario(int atual, int origem, int destino, DateTime horarioLimite, Stack<string> resultado, Queue<int> fila)
         {
+            //desenfileira o atual
             fila.Dequeue();
 
             int indiceVoo = -1;
             DateTime horario;
             DateTime novoHor = DateTime.Now;
 
+            //para toda aresta do vertice atual
             for (int k = 0; k < Vertices[atual].ListaDeAdjacencia.Count; k++)
             {
-                horario = Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[0];
+                horario = Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[0]; //horário escolhido arbitrariamente para efetuar as primeiras comparações
+
+                //if para verificar a direção do voo e se essa é a aresta que corresponde a onde deseja-se chegar
                 if (Vertices[atual].ListaDeAdjacencia[k].Direcao == 1 && Vertices[atual].ListaDeAdjacencia[k].verticeDestino.ID == destino)
                 {
+                    //para todo voo na lista de voos
                     for (int q = 0; q < Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada.Count; q++)
                     {
+                        //se a previsão de chegada, é menor ou igual ao horario limite, e maior ou igual ao ultimo horário selecionado
                         if (Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada[q] <= horarioLimite && Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada[q] >= horario)
                         {
-                            indiceVoo = q;
-                            horario = Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada[q];
-                            novoHor = Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[q];
+                            indiceVoo = q; //captura o indice desse voo
+                            horario = Vertices[atual].ListaDeAdjacencia[k].PrevisaoChegada[q]; //define o horário de chegada ao proximo aeroporto
+                            novoHor = Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[q]; //define o horário de saida do aeroporto atual
                         }
                     }
 
                     string r = Vertices[atual].Rotulo + " para " + Vertices[destino].Rotulo + " ";
 
+                    //se indiceVoo é -1, significa que não encontrou voos na rota, que cumprisse o hórario exigido
                     if (indiceVoo == -1)
                     {
+                        //tira todo o conteudo da pilha
                         for (int tam = resultado.Count; tam > 0; tam--)
                             resultado.Pop();
 
+                        //retorna a pilha vazia
                         return;                       
                     }
 
                     r += Vertices[atual].ListaDeAdjacencia[k].ListaDeVoos[indiceVoo] + "\n";
 
+                    //empilha o resultado
                     resultado.Push(r);
 
+                    //interrompe o loop das arestas
                     break;
                 }
             }
