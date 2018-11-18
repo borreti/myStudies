@@ -387,6 +387,11 @@ namespace Trabalho_Grafos
             {
                 MessageBox.Show("Parametros de origem e destino são inválidos",ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+            catch (IndexOutOfRangeException ex)
+            {
+                MessageBox.Show("Não há voos disponiveis", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
