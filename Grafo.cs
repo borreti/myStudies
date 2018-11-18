@@ -8,10 +8,11 @@ namespace Trabalho_Grafos
 {
     abstract class Grafo
     {
-        public Vertice[] Vertices;
+        public Vertice[] Vertices { get; set; }
 
         protected void FormarNovaAresta(int idV1, int idV2, Peso pesos, List<DateTime> listaVoos)
         {
+            //cria dois itens para representar a adjacencia
             Aresta i1 = new Aresta(this.Vertices[idV2], this.Vertices[idV1], -1, pesos, listaVoos);
             Aresta i2 = new Aresta(this.Vertices[idV1], this.Vertices[idV2], 1, pesos, listaVoos);
             Vertices[idV1].ListaDeAdjacencia.Add(i2);
@@ -41,19 +42,18 @@ namespace Trabalho_Grafos
 
         protected abstract void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila);
 
-        public Vertice SelecionarVertice(int indice)
-        {
-            return Vertices[indice];
-        }
-
         public bool isNulo()
         {
+            //para todos os vertices
             for (int i = 0; i < Vertices.Length; i++)
             {
-                if (Vertices[i].ListaDeAdjacencia.Count > 0)
+                //verifica se o grau é diferente de 0
+                if (!isIsolado(Vertices[i]))//se for diferente de 0, o grafo não é nulo
                     return false;
             }
 
+            //se passou por todo o for sem retornar nada, significa que todos os vertices tem grau 0
+            //o grafo é nulo
             return true;
         }
 
@@ -75,19 +75,24 @@ namespace Trabalho_Grafos
 
         public bool isRegular()
         {
+            //pega o grau de um vertice escolhido arbitráriamente
             int grau = getGrau(Vertices[0]);
 
+            //para todos os vertices, compara se eles possuem o mesmo grau
             for (int i = 1; i < Vertices.Length; i++)
             {
-                if (getGrau(Vertices[i]) != grau)
-                    return false;
+                if (getGrau(Vertices[i]) != grau)//se houver um vertice com grau diferente
+                    return false;//grafo não é regular
             }
 
+            //se passou por todo o laço sem retornar nada, o grafo possui todos os vertices com grau igual
+            //grafo é regular
             return true;
         }
 
         public void AnularGrafo()
         {
+            //remover todas as arestas do grafo
             for (int i = 0; i < Vertices.Length; i++)
             {
                 int tamanhoLista = Vertices[i].ListaDeAdjacencia.Count;
@@ -98,6 +103,7 @@ namespace Trabalho_Grafos
             }
         }
 
+        //busca vertices que ainda não foram visitados
         protected int ExisteVerticesEmBranco()
         {
             for (int h = 0; h < Vertices.Length; h++)
@@ -208,6 +214,7 @@ namespace Trabalho_Grafos
             vetorDistancias[idOrigem] = 0;
             vetorPredecessor[idOrigem] = -1;
 
+            //inicialização dos vetores
             for (int q = 0; q < tamVet; q++)
             {
                 if (q != idOrigem)
@@ -217,8 +224,7 @@ namespace Trabalho_Grafos
                 }
             }
 
-            Vertices[idOrigem].HorarioAtual = DateTime.Now;
-
+            //executa o algoritmo de dijkstra
             Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, nPeso);
 
             Stack<int> pilhaIndices = new Stack<int>();
@@ -248,8 +254,6 @@ namespace Trabalho_Grafos
 
             caminho += "\nPeso total: " + vetorDistancias[idDestino];
 
-            ResetarCores();
-
             PackDijkstra pack = new PackDijkstra(listaIds, caminho);
 
             return pack;
@@ -269,12 +273,10 @@ namespace Trabalho_Grafos
         public bool isConexo()
         {
             TravessiaEmAplitude(0);
-
-            //se houver um vertice que não foi visitado, significa que o grafo não é conexo
-            
+         
             for (int e = 0; e < Vertices.Length; e++)
             {
-                if (Vertices[e].EstadoCor == 1)
+                if (Vertices[e].EstadoCor == 1) //se houver um vertice que não foi visitado, significa que o grafo não é conexo  
                     return false;
             }
 
