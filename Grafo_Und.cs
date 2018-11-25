@@ -42,6 +42,14 @@ namespace Trabalho_Grafos
                 FormarNovaAresta(Vertices[parOrdenado.X].ID, Vertices[parOrdenado.Y].ID, parOrdenado.Pesos, parOrdenado.ListaDeHorarios);
         }
 
+        public Grafo_Und(int numeroDeVertices)
+        {
+            Vertices = new Vertice[numeroDeVertices];
+
+            for (int i = 0; i < Vertices.Length; i++)
+                Vertices[i] = new Vertice(i);
+        }
+
 
         public override bool isAdjacente(Vertice v1, Vertice v2)
         {
@@ -174,7 +182,7 @@ namespace Trabalho_Grafos
             return valor;
         }
 
-        public Grafo_Und Kruskal()
+        private Grafo_Und ArvoreMinima()
         {
             //algoritmo só deve ser executado em grafos conexos
             if (!isConexo()) //se o grafo não é conexo, o algoritmo não será executado e retornará null
@@ -220,6 +228,66 @@ namespace Trabalho_Grafos
             }
 
             return grafoAuxilir;
+        }
+
+        public List<Grafo_Und> Kruskal()
+        {
+            //lista dos componentes conexos
+            List<List<Vertice>> componentesConexos = TravessiaEmAplitude(0);
+            List<Grafo_Und> listaGrafos = new List<Grafo_Und>();
+
+            for (int b = 0; b < componentesConexos.Count; b++)
+            {
+                Vertice[] vetorVertices = new Vertice[componentesConexos[b].Count];
+                List<Vertice> listaV = new List<Vertice>();
+                Grafo_Und g;
+                Dictionary<int, int> vDictionary = new Dictionary<int, int>();
+
+                for (int k = 0; k < vetorVertices.Length; k++)
+                    vetorVertices[k] = new Vertice(k);
+
+                for (int c = 0; c < componentesConexos[b].Count; c++)
+                {
+                    listaV.Add(componentesConexos[b][c]);
+                    vetorVertices[c].ID = componentesConexos[b][c].ID;
+                    vetorVertices[c].Rotulo = componentesConexos[b][c].Rotulo;
+
+                    vDictionary.Add(vetorVertices[c].ID, vetorVertices[c].ID);
+                }
+
+                g = new Grafo_Und(vetorVertices.Length);
+                g.Vertices = vetorVertices;
+
+                for (int k = 0; k < componentesConexos[b].Count; k++)
+                {
+                    List<Aresta> lAresta = componentesConexos[b][k].ListaDeAdjacencia;
+                    for (int c = 0; c < lAresta.Count; c++)
+                    {
+                        try
+                        {
+                            int v1 = vDictionary[lAresta[c].verticeOrigem.ID];
+                            int v2 = vDictionary[lAresta[c].verticeDestino.ID];
+
+                            g.FormarNovaAresta(v1, v2, lAresta[c].Pesos);
+                        }
+
+                        catch (KeyNotFoundException)
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                g.CorrigiirIndices();
+                listaGrafos.Add(g);
+            }
+
+            List<Grafo_Und> floresta = new List<Grafo_Und>();
+
+            for (int ac = 0; ac < listaGrafos.Count; ac++)
+                floresta.Add(listaGrafos[ac].ArvoreMinima());
+
+            return floresta;
         }
 
         private bool VerificarCiclo(Queue<int> fila, int idOrigem, int idDestino, int idAtual, Grafo_Und grafoAux)
@@ -366,8 +434,18 @@ namespace Trabalho_Grafos
             return null;
         }
 
-        protected override void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
+        protected override List<List<Vertice>> TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
         {
+            List<List<Vertice>> componentes = new List<List<Vertice>>();
+            List<Vertice> c = new List<Vertice>();
+            TravessiaEmAplitude(distancia, tempo, atual, fila, 0,c, componentes);
+            return componentes;
+        }
+
+        private void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila, int nComponente, List<Vertice> listaV, List<List<Vertice>> componentes)
+        {
+            listaV.Add(Vertices[atual]);
+
             for (int w = 0; w < Vertices[atual].ListaDeAdjacencia.Count; w++)
             {
                 int indice = Vertices[atual].ListaDeAdjacencia[w].verticeDestino.ID;
@@ -386,10 +464,24 @@ namespace Trabalho_Grafos
             Vertices[atual].EstadoCor = 3;
             tempo++;
 
+            int novoIndice;
+
             if (fila.Count > 0)
             {
-                int novoIndice = fila.Dequeue();
-                TravessiaEmAplitude(distancia, tempo, novoIndice, fila);
+                novoIndice = fila.Dequeue();
+                TravessiaEmAplitude(distancia + 1, tempo, novoIndice, fila, nComponente, listaV, componentes);
+            }
+
+            else
+            {
+
+                novoIndice = ExisteVerticesEmBranco();
+                componentes.Add(listaV);
+
+                listaV = new List<Vertice>();
+
+                if (novoIndice != -1)
+                    TravessiaEmAplitude(distancia + 1, tempo, novoIndice, fila, nComponente + 1, listaV, componentes);
             }
         }
 
@@ -442,6 +534,7 @@ namespace Trabalho_Grafos
             {
                 //busca um vertice em branco
                 novoIndice = ExisteVerticesEmBranco();
+                string auxVal = "";
 
                 //se o novoIndice for diferente de -1, é porque existe
                 if (novoIndice != -1)
@@ -452,8 +545,14 @@ namespace Trabalho_Grafos
                     for(int q = 0; q < listaConjunto.Count; q++)
                     {
                         if (isPendente(Vertices[listaConjunto[q]])) //verifica aqueles que possuem grau 1
-                            valor += Vertices[listaConjunto[q]].Rotulo + ", "; //todos que possuem grau 1, são incluidos na string
+                            auxVal += Vertices[listaConjunto[q]].Rotulo + ", "; //todos que possuem grau 1, são incluidos na string
                     }
+
+                    if (auxVal == "")
+                        valor += "Não há aeroportos que separadamente, se removidos, interrompem a conectividade";
+
+                    else
+                        valor += auxVal;
 
                     nConjuntos++;
                     listaConjunto = new List<int>(); //reseta a lista de conjuntos
@@ -466,7 +565,6 @@ namespace Trabalho_Grafos
                 //também não há preparação da string para a proxima chamada, e sim um acabamento final
                 else
                 {
-                    string auxVal = "";
                     valor += "\nAeroportos que separadamente, se removidos, interrompem a conectividade do conjunto " + nConjuntos + ": ";
                     for(int q = 0; q < listaConjunto.Count; q++)
                     {
