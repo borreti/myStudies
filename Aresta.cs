@@ -12,7 +12,6 @@ namespace Trabalho_Grafos
         public Vertice verticeDestino { get; set; }
         public int Direcao { get; set; }//se a direção for 1, o vertice parte da origem para o destino, se for -1, destino para a origem
         public Peso Pesos { get; set; }//pesos de duração do voo e distancia
-        public int ID { get; set; }
         public List<DateTime> ListaDeVoos { get; set; } //lista com todos os horarios de voo
         public List<DateTime> PrevisaoChegada { get; set; } //lista com todas as previsões de chegada
 
