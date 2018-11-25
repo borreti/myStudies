@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Trabalho_Grafos"
         mc:Ignorable="d"
-        Title="MainWindow" Height="791.135" Width="633.95">
+        Title="MainWindow" Height="764.135" Width="633.95">
     <Grid>
         <Button x:Name="ler_arquivo" Content="Ler arquivo" HorizontalAlignment="Left" Margin="204,21,0,0" VerticalAlignment="Top" Width="75" Click="ler_arquivo_Click" Height="23"/>
         <TextBox x:Name="text_arq_nome" HorizontalAlignment="Left" Height="23" Margin="79,21,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <Label Content="Diretório" HorizontalAlignment="Left" Margin="17,18,0,0" VerticalAlignment="Top"/>
-        <ComboBox x:Name="box_grafo_selecionado" HorizontalAlignment="Left" Margin="146,65,0,0" VerticalAlignment="Top" Width="106" SelectionChanged="box_grafo_selecionado_SelectionChanged">
+        <ComboBox x:Name="box_grafo_selecionado" HorizontalAlignment="Left" Margin="146,65,0,0" VerticalAlignment="Top" Width="133" SelectionChanged="box_grafo_selecionado_SelectionChanged">
         </ComboBox>
         <Button x:Name="btn_viagem_minima" Content="Obter rota" HorizontalAlignment="Left" Margin="263,396,0,0" VerticalAlignment="Top" Width="75" Click="btn_viagem_minima_Click"/>
         <RadioButton x:Name="radio_0" Content="Distância" HorizontalAlignment="Left" Margin="30,246,0,0" VerticalAlignment="Top" IsChecked="True"/>
@@ -34,14 +34,15 @@
             </DataGrid.Columns>
         </DataGrid>
         <Button x:Name="btn_conectividade" Content="Conexão entre aeroportos" HorizontalAlignment="Left" Margin="17,151,0,0" VerticalAlignment="Top" Width="278" Height="23" Click="btn_conectividade_Click"/>
-        <ComboBox x:Name="box_aeroporto_origem_ultimo_voo" HorizontalAlignment="Left" Margin="156,541,0,0" VerticalAlignment="Top" Width="120"/>
-        <ComboBox x:Name="box_aeroporto_destino_ultimo_voo" HorizontalAlignment="Left" Margin="359,541,0,0" VerticalAlignment="Top" Width="120"/>
-        <Label Content="Aeroporto de origem" HorizontalAlignment="Left" Margin="156,511,0,0" VerticalAlignment="Top"/>
-        <Label Content="Aeroporto de destino" HorizontalAlignment="Left" Margin="359,511,0,0" VerticalAlignment="Top"/>
-        <Label Content="Ultimo voo possível para o horário selecionado" HorizontalAlignment="Left" Margin="191,457,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="text_horario" HorizontalAlignment="Left" Height="22" Margin="263,607,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="box_aeroporto_origem_ultimo_voo" HorizontalAlignment="Left" Margin="156,540,0,0" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="box_aeroporto_destino_ultimo_voo" HorizontalAlignment="Left" Margin="359,540,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label Content="Aeroporto de origem" HorizontalAlignment="Left" Margin="156,510,0,0" VerticalAlignment="Top"/>
+        <Label Content="Aeroporto de destino" HorizontalAlignment="Left" Margin="359,510,0,0" VerticalAlignment="Top"/>
+        <Label Content="Ultimo voo possível para o horário selecionado" HorizontalAlignment="Left" Margin="191,457,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <TextBox x:Name="text_horario" HorizontalAlignment="Left" Height="22" Margin="263,606,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <Button x:Name="btn_ultimo_horario" Content="Obter" HorizontalAlignment="Left" Margin="263,675,0,0" VerticalAlignment="Top" Width="120" Click="btn_ultimo_horario_Click"/>
-        <Label Content="Horário de chegada" HorizontalAlignment="Left" Margin="263,576,0,0" VerticalAlignment="Top"/>
+        <Label Content="Horário de chegada" HorizontalAlignment="Left" Margin="263,574,0,0" VerticalAlignment="Top"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="281" Margin="17,435,0,0" VerticalAlignment="Top" Width="587"/>
 
     </Grid>
 </Window>
