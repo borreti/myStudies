@@ -21,10 +21,25 @@ namespace Trabalho_Grafos
 
         protected void FormarNovaAresta(int idV1, int idV2, Peso pesos)
         {
+            for (int ab = 0; ab < Vertices.Length; ab++)
+            {
+                if (Vertices[ab].ID == idV1)
+                    idV1 = ab;
+
+                else if (Vertices[ab].ID == idV2)
+                    idV2 = ab;
+            }
+
             Aresta i1 = new Aresta(this.Vertices[idV2], this.Vertices[idV1], -1, pesos);
             Aresta i2 = new Aresta(this.Vertices[idV1], this.Vertices[idV2], 1, pesos);
             Vertices[idV1].ListaDeAdjacencia.Add(i2);
             Vertices[idV2].ListaDeAdjacencia.Add(i1);
+        }
+
+        public void CorrigiirIndices ()
+        {
+            for (int i = 0; i < Vertices.Length; i++)
+                Vertices[i].ID = i;
         }
 
 
@@ -40,7 +55,7 @@ namespace Trabalho_Grafos
 
         public abstract string ListaDeAdjacencia();
 
-        protected abstract void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila);
+        protected abstract List<List<Vertice>> TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila);
 
         public bool isNulo()
         {
@@ -121,12 +136,6 @@ namespace Trabalho_Grafos
                 Vertices[c].EstadoCor = 1;
         }
 
-        public void ResetarPredecessores()
-        {
-            for (int c = 0; c < Vertices.Length; c++)
-                Vertices[c].Predecessor = null;
-        }
-
         //ordena arestas por peso
         protected Aresta[] insertionSort(Aresta[] vetor, int nPeso)
         {
@@ -198,7 +207,7 @@ namespace Trabalho_Grafos
         }
 
         //retorna uma string com os aeroportos na ordem e a informação do peso total
-        public PackDijkstra Dijkstra(int idOrigem, int idDestino, int nPeso)
+        public List<int> Dijkstra(int idOrigem, int idDestino, int nPeso,ref int pesoFinal)
         {
             /*nPeso = 0 --> Dijkstra por distancia
              *nPeso = 1 --> Dijkstra por tempo total de voo
@@ -227,6 +236,8 @@ namespace Trabalho_Grafos
             //executa o algoritmo de dijkstra
             Dijkstra(vetorDistancias, vetorPredecessor, idOrigem, nPeso);
 
+            pesoFinal = vetorDistancias[idDestino];
+
             Stack<int> pilhaIndices = new Stack<int>();
 
             pilhaIndices.Push(idDestino);
@@ -239,27 +250,15 @@ namespace Trabalho_Grafos
                 proxId = vetorPredecessor[proxId];
             }
 
-            List<int> listaIds = new List<int>();
+           List<int> listaIds = new List<int>();
 
             foreach (int valor in pilhaIndices)
                 listaIds.Add(valor);
 
-            string caminho = "";
-
-            foreach (int ex in listaIds)
-                caminho += Vertices[ex].Rotulo + ",";
-
-            int tam = caminho.Length;
-            caminho = caminho.Substring(0, caminho.Length - 1);
-
-            caminho += "\nPeso total: " + vetorDistancias[idDestino];
-
-            PackDijkstra pack = new PackDijkstra(listaIds, caminho);
-
-            return pack;
+            return listaIds;
         }
 
-        public void TravessiaEmAplitude(int vInicial)
+        public List<List<Vertice>> TravessiaEmAplitude(int vInicial)
         {
             ResetarCores();
             Vertices[vInicial].EstadoCor = 2;
@@ -267,21 +266,28 @@ namespace Trabalho_Grafos
             Vertices[vInicial].TempoDeDescoberta = 0;
             Vertices[vInicial].Predecessor = null;
             Queue<int> fila = new Queue<int>();
-            TravessiaEmAplitude(1, 1, vInicial, fila);
+            return TravessiaEmAplitude(1, 1, vInicial, fila);
         }
 
-        public bool isConexo()
+        public virtual bool isConexo()
         {
             TravessiaEmAplitude(0);
          
-            for (int e = 0; e < Vertices.Length; e++)
+            for (int e = 1; e < Vertices.Length; e++)
             {
-                if (Vertices[e].EstadoCor == 1) //se houver um vertice que não foi visitado, significa que o grafo não é conexo  
+                if (Vertices[e].Predecessor == null) //se houver um vertice além do primeiro com predecessor null, o grafo não é conexo
                     return false;
             }
-
-            ResetarCores();
             return true;
+        }
+
+        public void ResetarIndex()
+        {
+            for(int a = 0; a < Vertices.Length; a++)
+            {
+                Vertices[a].Index = -1;
+                Vertices[a].LowLink = -1;
+            }
         }
     }
 }
