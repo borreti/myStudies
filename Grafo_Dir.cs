@@ -87,7 +87,7 @@ namespace Trabalho_Grafos
             for (int k = 0; k < Vertices[v1.ID].ListaDeAdjacencia.Count; k++)
             {
                 //compara os ids para verificar se a aresta existe
-                //ignora direção, considera somente a adjacencia
+                //considera a direção
                 if (Vertices[v1.ID].ListaDeAdjacencia[k].verticeDestino.ID == v2.ID && Vertices[v1.ID].ListaDeAdjacencia[k].Direcao == 1)
                     return true;
             }
@@ -100,77 +100,41 @@ namespace Trabalho_Grafos
             throw new NotImplementedException();
         }
 
-        public Stack<Vertice> OrdenacaoTopologica()
-        {
-            Stack<Vertice> pilha = new Stack<Vertice>();
-            Vertice[] vetVertices = Vertices;
-            OrdenacaoTopologica(vetVertices, 0, 1, pilha);
-            return pilha;
-        }
-
-        private void OrdenacaoTopologica(Vertice[] vetVertices, int indice, int tempo, Stack<Vertice> pilhaVertices)
-        {
-            //se o vertice ainda não foi visitaod
-            if (vetVertices[indice].EstadoCor == 1)
-            {
-                //colore de azul e define o tempo de descoberta
-                vetVertices[indice].EstadoCor = 2;
-                vetVertices[indice].TempoDeDescoberta = tempo;
-            }
-
-            //visita toda a lista de adjacencia do vertice atual
-            VisitarVerticeOT(vetVertices, indice, ref tempo, pilhaVertices);
-        }
-
-        //Visitar vertice por ordenacao topologica
-        private void VisitarVerticeOT(Vertice[] vetVertices, int indice, ref int tempo, Stack<Vertice> pilhaVertices)
-        {
-            //se o vertice ainda não foi pintado de vermelho
-            if (vetVertices[indice].EstadoCor != 3)
-            {
-                //percorre toda a lista de adjacencia do vertice atual
-                for (int p = 0; p < vetVertices[indice].ListaDeAdjacencia.Count; p++)
-                {
-                    //se existe um vertice ainda não visitado
-                    if (vetVertices[vetVertices[indice].ListaDeAdjacencia[p].verticeDestino.ID].EstadoCor == 1 && vetVertices[indice].ListaDeAdjacencia[p].Direcao == 1)
-                    {
-                        tempo++;  //acrescenta uma unidade de tempo
-                        int predecessor = indice;  //define o predecessor
-                        int novoIndice = vetVertices[indice].ListaDeAdjacencia[p].verticeDestino.ID; //define o proximo indice a ser acessado
-                        vetVertices[novoIndice].Predecessor = vetVertices[predecessor]; //define o predecessor do vertice atual
-                        OrdenacaoTopologica(vetVertices, novoIndice, tempo, pilhaVertices); // faz uma chamada recursiva implicita
-                        return;
-                    }
-                }
-
-                tempo++;
-                vetVertices[indice].EstadoCor = 3; //colore o vertice de vermelho
-                vetVertices[indice].TempoDeFinalizacao = tempo; //define o tempo de finalização
-                pilhaVertices.Push(vetVertices[indice]); //acrescenta o vertice na pilha
-            }
-
-            //se existe um predecessor
-            if (vetVertices[indice].Predecessor != null)
-            {
-                //chamada do método de ordenação com o predecessor do vertice atual
-                OrdenacaoTopologica(vetVertices, vetVertices[indice].Predecessor.ID, tempo, pilhaVertices);
-            }
-
-            //se não existe predecessor
-            else
-            {
-                //efetua uma busca por vertices em branco
-                indice = ExisteVerticesEmBranco();
-
-                //se existe vertices em branco
-                if (indice != -1)
-                    OrdenacaoTopologica(vetVertices, indice, tempo, pilhaVertices); //chamada do método de ordenação com o indice do vertice em branco
-            }
-        }
-
         public override bool isEuleriano()
         {
             throw new NotImplementedException();
+        }
+
+        //verifica se o grafo é fortemente conexo
+        public override bool isConexo()
+        {
+           for (int x = 0; x < Vertices.Length; x++)
+            {
+                int gEnt = 0, gSai = 0;
+                for (int w = 0; w < Vertices[x].ListaDeAdjacencia.Count; w++)
+                {
+                    Aresta a = Vertices[x].ListaDeAdjacencia[w];
+
+                    int orig = a.verticeOrigem.ID;
+                    int dest = a.verticeDestino.ID;
+
+                    //desconsidera os loops
+                    if (orig != dest)
+                    {
+
+                        if (a.Direcao == 1)
+                            gSai++;
+
+                        else
+                            gEnt++;
+                    }
+                }
+
+                if (!(gEnt > 0 && gSai > 0))
+                    return false;
+            }
+
+            return true;
         }
 
         public override string ListaDeAdjacencia()
@@ -325,7 +289,7 @@ namespace Trabalho_Grafos
             return null;
         }
 
-        protected override void TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
+        protected override List<List<Vertice>> TravessiaEmAplitude(int distancia, int tempo, int atual, Queue<int> fila)
         {
             //para todo vertice adjacente ao atual
             for (int w = 0; w < this.Vertices[atual].ListaDeAdjacencia.Count; w++)
@@ -356,14 +320,20 @@ namespace Trabalho_Grafos
                 //se houver, cria o novo indice
                 int novoIndice = fila.Dequeue();
                 //chamada recursiva
-                this.TravessiaEmAplitude(distancia, tempo, novoIndice, fila);
+                return this.TravessiaEmAplitude(distancia, tempo, novoIndice, fila);
+            }
+
+            else
+            {
+                return null;
             }
         }
 
         public string BuscarUltimoHorario(DateTime horarioLimite, int origem, int destino)
         {
             //busca a menor rota
-            List<int> caminho = Dijkstra(origem, destino, 3).ListaCaminho;
+            int peso = 0;
+            List<int> caminho = Dijkstra(origem, destino, 3,ref peso);
 
             Queue<int> FilaId = new Queue<int>();
 
@@ -390,7 +360,7 @@ namespace Trabalho_Grafos
             //ocorre quando não há uma rota possível para o destino
             else
             {
-                res = "Não há nenhum voo que cumpre os requisitos.";
+                return null;
             }
 
             return res;
@@ -443,7 +413,7 @@ namespace Trabalho_Grafos
                     //empilha o resultado
                     resultado.Push(r);
 
-                    //interrompe o loop das arestas
+                    //interrompe o loop das arestas, pois o voo já foi encontrado
                     break;
                 }
             }
@@ -451,5 +421,66 @@ namespace Trabalho_Grafos
             if (fila.Count > 1)
                 BuscarUltimoHorario(fila.ElementAt(fila.Count - 1), origem, fila.ElementAt(fila.Count - 2), novoHor, resultado, fila);
         }
+
+        public List<List<Vertice>> ComponentensConexos()
+        {
+            ResetarIndex();
+            List<List<Vertice>> listaComponentes = new List<List<Vertice>>();
+            int index = 0;
+            Stack<int> S = new Stack<int>();
+
+            foreach (Vertice v in Vertices)
+            {
+                if (v.Index < 0)
+                {
+                    strongconnect(v, index, S, listaComponentes);
+                }
+            }
+
+            return listaComponentes;
+        }
+
+        private void strongconnect(Vertice v, int index, Stack<int> S, List<List<Vertice>> componentesConexos)
+        {
+            v.Index = index;
+            v.LowLink = index;
+            index++;
+            S.Push(v.ID);
+
+            for (int q = 0; q < v.ListaDeAdjacencia.Count; q++)
+            {
+                Aresta a = v.ListaDeAdjacencia[q];
+
+                if (a.Direcao == 1)
+                {
+                    int d = a.verticeDestino.ID;
+                    int o = a.verticeOrigem.ID;
+
+                    if (Vertices[d].Index < 0)
+                    {
+                        strongconnect(Vertices[d], index, S, componentesConexos);
+                        Vertices[d].LowLink = Math.Min(v.LowLink, Vertices[d].LowLink);
+                    }
+                    else if (S.Contains(Vertices[d].ID))
+                    {
+                        v.LowLink = Math.Min(v.LowLink, Vertices[d].Index);
+                    }
+                }
+            }
+
+            if (v.LowLink == v.Index)
+            {
+                List<Vertice> scc = new List<Vertice>();
+                int idW;
+                int idV = v.ID;
+                do
+                {
+                    idW = S.Pop();
+                    scc.Add(Vertices[idW]);
+                } while (idV != idW);
+
+                componentesConexos.Add(scc);
+            }
+        }   
     }
 }
