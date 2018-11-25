@@ -8,7 +8,7 @@ namespace Trabalho_Grafos
 {
     class Vertice
     {
-        public int ID { get; }
+        public int ID { get; set; }
         public int EstadoCor { get; set; }
         public int TempoDeDescoberta { get; set; }
         public int TempoDeFinalizacao { get; set; }
@@ -16,6 +16,8 @@ namespace Trabalho_Grafos
         public string Rotulo { get; set; }
         public Vertice Predecessor { get; set; }
         public List<Aresta> ListaDeAdjacencia { get; set; }
+        public int Index { get; set; }
+        public int LowLink { get; set; }
 
         public Vertice(int ID)
         {
@@ -25,6 +27,8 @@ namespace Trabalho_Grafos
             TempoDeDescoberta = -1;
             TempoDeFinalizacao = -1;
             Predecessor = null;
+            LowLink = -1;
+            Index = -1;
         }
 
         public Vertice(int ID, string Rotulo)
@@ -36,6 +40,8 @@ namespace Trabalho_Grafos
             TempoDeDescoberta = -1;
             TempoDeFinalizacao = -1;
             Predecessor = null;
+            LowLink = -1;
+            Index = -1;
         }
     }
 }
