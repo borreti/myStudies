@@ -33,9 +33,9 @@ namespace Trabalho_Grafos
 
         private void box_grafo_selecionado_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            indiceAcesso = int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1;
-            grid_lista_adjacencia.Items.Clear();
-            PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[indiceAcesso]);
+            indiceAcesso = int.Parse(box_grafo_selecionado.SelectedItem.ToString()) - 1; //indice de acesso da lista dos grafos
+            grid_lista_adjacencia.Items.Clear(); //limpa o quadro
+            PreencherComboBox(box_aeroporto_origem, ListaGrafosDirigidos[indiceAcesso]); //preenche todas as caixas necessárias
             PreencherComboBox(box_aeroporto_destino, ListaGrafosDirigidos[indiceAcesso]);
             PreencherComboBox(box_aeroporto_origem_ultimo_voo, ListaGrafosDirigidos[indiceAcesso]);
             PreencherComboBox(box_aeroporto_destino_ultimo_voo, ListaGrafosDirigidos[indiceAcesso]);
@@ -68,7 +68,7 @@ namespace Trabalho_Grafos
         {
             try
             {
-                string arqName = text_arq_nome.Text;
+                string arqName = text_arq_nome.Text; //captura o nome digitado pelo usuario
                 Grafo_Dir grafoDir;
                 Grafo_Und grafoUnd;
 
@@ -237,14 +237,14 @@ namespace Trabalho_Grafos
                 string caminho = "";
                 Vertice[] vetorVertices = null;
 
-                if (tipoPeso < 2)
+                int pesoF = 0;
+
+                if (tipoPeso < 2 || tipoPeso == 3)
                 {
                     vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
-                    //tratado na classe grafo
-                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso).mensagemFinal;
+                    listaCaminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso, ref pesoF);
                 }
 
-                //tratato no próprio evento
                 else if (tipoPeso == 2)
                 {
                     ListaGrafosDirigidos[indiceAcesso].TravessiaEmAplitude(origem);
@@ -265,26 +265,24 @@ namespace Trabalho_Grafos
 
                     for (int d = auxLista.Count - 1; d >= 0; d--)
                         listaCaminho.Add(auxLista[d]);
+                }
 
+                if (listaCaminho.Count > 0)
+                {
                     foreach (int ex in listaCaminho)
-                        caminho += vetorVertices[ex].Rotulo + ",";
+                        caminho += ListaGrafosNaoDirigido[indiceAcesso].Vertices[ex].Rotulo + ",";
 
                     int tam = caminho.Length;
                     caminho = caminho.Substring(0, caminho.Length - 1);
-                    caminho += "\nPeso total: " + (listaCaminho.Count - 1);
-                }
 
-                else if (tipoPeso == 3)
-                {
-                    vetorVertices = ListaGrafosDirigidos[indiceAcesso].Vertices;
-                    caminho = ListaGrafosDirigidos[indiceAcesso].Dijkstra(origem, destino, tipoPeso).mensagemFinal;
-                }
-
-                if (caminho != null)
+                    caminho += "\nPeso total: " + pesoF;
                     MessageBox.Show(caminho, "Rota disponível", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
 
                 else
-                    MessageBox.Show("O grafo apresentado não é conexo");
+                {
+                    MessageBox.Show("Não existe rota para esse aeroporto, partindo da sua atual origem", "Rota indisponível", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
 
             catch (NullReferenceException ex)
@@ -302,18 +300,24 @@ namespace Trabalho_Grafos
         {
             try
             {
-                Grafo_Und gd = ListaGrafosNaoDirigido[indiceAcesso].Kruskal();
+                List<Grafo_Und> floresta = ListaGrafosNaoDirigido[indiceAcesso].Kruskal();
+                string mensagem = "";
 
-                string mensagem = gd.ListaDeAdjacencia();
+                for (int k = 0; k < floresta.Count; k++)
+                {
+                    mensagem += "Arvore " + (k + 1) + "\n";
 
-                int nArestas = 0;
+                    mensagem += floresta[k].ListaDeAdjacencia();
 
-                for (int l = 0; l < gd.Vertices.Length; l++)
-                    nArestas += gd.Vertices[l].ListaDeAdjacencia.Count;
+                    int nArestas = 0;
 
-                nArestas /= 2;
+                    for (int l = 0; l < floresta[k].Vertices.Length; l++)
+                        nArestas += floresta[k].Vertices[l].ListaDeAdjacencia.Count;
 
-                mensagem += "\n\nSerão necessárias " + nArestas + " aeronaves para realizar os serviços de entrega entre os aeroportos";
+                    nArestas /= 2;
+
+                    mensagem += "\nSerão necessárias " + nArestas + " aeronaves para realizar os serviços de entrega entre os aeroportos" + "\n\n";
+                }
 
                 MessageBox.Show(mensagem, "Lista de adjacência com as rotas de custo minímo", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -322,19 +326,27 @@ namespace Trabalho_Grafos
             {
                 MessageBox.Show("O grafo não é conexo.", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
-            catch(ArgumentOutOfRangeException ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
         }
 
         private void btn_conectividade_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                string message = ListaGrafosNaoDirigido[indiceAcesso].ComponentesConexos();
-                MessageBox.Show(message,"Conectividade", MessageBoxButton.OK, MessageBoxImage.Information);
+                List<List<Vertice>> componentes = ListaGrafosDirigidos[indiceAcesso].ComponentensConexos();
+                string mensagem = "";
+
+                for (int q = 0; q < componentes.Count; q++)
+                {
+                    mensagem += "Componente conexo " + (q+1) + ": ";
+                    for (int c = (componentes[q].Count - 1); c >= 0; c--)
+                    {
+                        mensagem += componentes[q][c].Rotulo + ", ";
+                    }
+
+                    mensagem += "\n";
+                }
+
+                MessageBox.Show(mensagem, "Componentes conexos do grafo", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             catch(IndexOutOfRangeException ex)
@@ -370,7 +382,16 @@ namespace Trabalho_Grafos
 
                string message = ListaGrafosDirigidos[indiceAcesso].BuscarUltimoHorario(dt,origem, destino);
 
-                MessageBox.Show(message);
+                if (message == null)
+                {
+                    message = "Não há voo que cumpre os requisitos de horário";
+                    MessageBox.Show(message,"Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                else
+                {
+                    MessageBox.Show(message, "Rota disponível", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
 
             catch(FormatException ex)
@@ -390,7 +411,7 @@ namespace Trabalho_Grafos
 
             catch (IndexOutOfRangeException ex)
             {
-                MessageBox.Show("Não há voos disponiveis", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Não há voos disponiveis que cumprem o horário solicitado", ex.Message, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
